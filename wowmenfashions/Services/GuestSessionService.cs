@@ -8,6 +8,8 @@ public class GuestSessionService
     private readonly IHttpContextAccessor _httpContextAccessor;
     private const string GuestCartCookieName = "GuestCartId";
 
+    private Guid? _cachedCartId;
+
     public GuestSessionService(IHttpContextAccessor httpContextAccessor)
     {
         _httpContextAccessor = httpContextAccessor;
@@ -15,24 +17,36 @@ public class GuestSessionService
 
     public Guid GetOrCreateGuestCartId()
     {
+        if (_cachedCartId.HasValue) return _cachedCartId.Value;
+
         var context = _httpContextAccessor.HttpContext;
-        if (context == null) return Guid.NewGuid(); // Fallback for components out of HTTP context
+        if (context == null)
+        {
+            _cachedCartId = Guid.NewGuid();
+            return _cachedCartId.Value;
+        }
 
         if (context.Request.Cookies.TryGetValue(GuestCartCookieName, out var cookieValue) && 
             Guid.TryParse(cookieValue, out var guestCartId))
         {
+            _cachedCartId = guestCartId;
             return guestCartId;
         }
 
-        guestCartId = Guid.NewGuid();
-        context.Response.Cookies.Append(GuestCartCookieName, guestCartId.ToString(), new CookieOptions
+        _cachedCartId = Guid.NewGuid();
+        
+        try 
         {
-            HttpOnly = true,
-            IsEssential = true,
-            SameSite = SameSiteMode.Lax,
-            Expires = DateTimeOffset.UtcNow.AddDays(30)
-        });
+            context.Response.Cookies.Append(GuestCartCookieName, _cachedCartId.Value.ToString(), new CookieOptions
+            {
+                HttpOnly = true,
+                IsEssential = true,
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTimeOffset.UtcNow.AddDays(30)
+            });
+        }
+        catch { } // Ignore exception if response has already started in Blazor InteractiveServer
 
-        return guestCartId;
+        return _cachedCartId.Value;
     }
 }

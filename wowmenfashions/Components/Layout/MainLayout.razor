@@ -1,3 +1,5 @@
+@using wowmenfashions.Components.Shared
+@using System.Security.Claims
 @inherits LayoutComponentBase
 
 
@@ -10,14 +12,24 @@
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" Size="Size.Small" OnClick="DrawerToggle" />
         <MudText Typo="Typo.h6" Class="ml-2">WOWMEN</MudText>
         <MudSpacer />
-        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" Size="Size.Small" />
+        
+        <AuthorizeView>
+            <Authorized>
+                <MudAvatar Color="Color.Secondary" Size="Size.Small" Class="mr-3 fw-bold" Style="color: white;">
+                    @GetInitials(context.User)
+                </MudAvatar>
+            </Authorized>
+        </AuthorizeView>
+
         <wowmenfashions.Components.Shared.CartWidget />
     </MudAppBar>
     <MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="0">
         <NavMenu />
     </MudDrawer>
-    <MudMainContent Class="pt-4 pa-2">
-        @Body
+    <MudMainContent Class="pt-16 px-4 pb-4">
+        <GlobalErrorBoundary>
+            @Body
+        </GlobalErrorBoundary>
     </MudMainContent>
 </MudLayout>
 
@@ -57,22 +69,22 @@
 
     private readonly PaletteLight _lightPalette = new()
     {
-        Primary = "#1A237E",
+        Primary = "#0B192C",
         Secondary = "#D4AF37",
-        AppbarBackground = "#FFFFFF",
-        AppbarText = "#1A237E",
-        DrawerBackground = "#F8F9FA",
+        AppbarBackground = "#0B192C",
+        AppbarText = "#FFFFFF",
+        DrawerBackground = "#FFFFFF",
         Background = "#FAFAFA",
         Surface = "#FFFFFF",
-        TextPrimary = "#212121",
-        TextSecondary = "#757575"
+        TextPrimary = "#0B192C",
+        TextSecondary = "#4A5568"
     };
 
     private readonly PaletteDark _darkPalette = new()
     {
         Primary = "#D4AF37",
-        Secondary = "#1A237E",
-        AppbarBackground = "#121212",
+        Secondary = "#0B192C",
+        AppbarBackground = "#0B192C",
         AppbarText = "#D4AF37",
         DrawerBackground = "#1A1A1A",
         Background = "#121212",
@@ -80,6 +92,16 @@
         TextPrimary = "#F5F5F5",
         TextSecondary = "#BDBDBD"
     };
+
+    private string GetInitials(ClaimsPrincipal user)
+    {
+        var name = user.Identity?.Name;
+        if (string.IsNullOrEmpty(name)) return "U";
+        
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0].Substring(0, 1).ToUpper();
+        return (parts[0].Substring(0, 1) + parts[^1].Substring(0, 1)).ToUpper();
+    }
 
     public string DarkLightModeButtonIcon => _isDarkMode switch
     {

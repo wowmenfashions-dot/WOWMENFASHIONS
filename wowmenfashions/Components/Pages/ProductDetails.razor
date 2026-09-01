@@ -30,7 +30,7 @@
                     <MudCard Elevation="0" Class="overflow-hidden rounded-lg">
                         <MudCarousel Class="mud-width-full zoom-container" Style="height:400px;" ShowArrows="@(_product.AdditionalImages.Count > 0)" ShowBullets="@(_product.AdditionalImages.Count > 0)" EnableSwipeGesture="true" AutoCycle="false" TData="object">
                             <MudCarouselItem Transition="Transition.Slide">
-                                <img src="@_product.ImageUrl" alt="@_product.Name" class="zoom-img" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='https://picsum.photos/seed/fallback/400/400.avif';" />
+                                <img src="@_currentImageUrl" alt="@_product.Name" class="zoom-img" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='https://picsum.photos/seed/fallback/400/400.avif';" />
                             </MudCarouselItem>
                             @if (_product.AdditionalImages != null)
                             {
@@ -72,22 +72,22 @@
                     <!-- Add to Cart Action -->
                     <div class="d-flex flex-wrap align-center gap-2 mb-4">
                         <MudNumericField @bind-Value="_quantity" Min="1" Max="10" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 100px;" />
-                        <MudButton Variant="Variant.Filled" Color="Color.Dark" Size="Size.Small" StartIcon="@Icons.Material.Filled.ShoppingCart" OnClick="AddToCartAsync" Class="px-4 py-2 rounded-pill fw-bold flex-grow-1 flex-md-grow-0">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.ShoppingCart" OnClick="AddToCartAsync" Class="px-4 py-2 rounded-pill fw-bold flex-grow-1 flex-md-grow-0">
                             Add to Cart
                         </MudButton>
                     </div>
 
-                    @if (_product.AvailableColors != null && _product.AvailableColors.Any())
+                    @if (_product.AvailableColorsList != null && _product.AvailableColorsList.Any())
                     {
                         <div class="mb-4">
                             <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold">Select Color:</MudText>
                             <div class="d-flex gap-2">
-                                @foreach (var color in _product.AvailableColors)
+                                @foreach (var color in _product.AvailableColorsList)
                                 {
                                     <div class="color-box @(_selectedColor as string == color ? "selected" : "")" 
                                          style="background-color: @color.ToLower();" 
                                          title="@color"
-                                         @onclick="@(() => _selectedColor = color)">
+                                         @onclick="@(() => SelectColor(color))">
                                     </div>
                                 }
                             </div>
@@ -95,9 +95,15 @@
                     }
                     else if (!string.IsNullOrEmpty(_product.Color))
                     {
-                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-2">
-                            <strong>Color:</strong> @_product.Color
-                        </MudText>
+                        <div class="mb-4">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold">Color:</MudText>
+                            <div class="d-flex gap-2">
+                                <div class="color-box selected" 
+                                     style="background-color: @_product.Color.ToLower();" 
+                                     title="@_product.Color">
+                                </div>
+                            </div>
+                        </div>
                     }
                     <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-2">
                         <strong>SKU:</strong> @(_product.Id.ToString("00000"))
@@ -119,6 +125,7 @@
     private ProductDto? _product;
     private int _quantity = 1;
     private object? _selectedColor;
+    private string _currentImageUrl = string.Empty;
     private List<BreadcrumbItem> _breadcrumbs = new();
 
     protected override async Task OnInitializedAsync()
@@ -128,13 +135,13 @@
         
         if (_product != null)
         {
-            if (_product.AvailableColors != null && _product.AvailableColors.Any())
+            if (_product.AvailableColorsList != null && _product.AvailableColorsList.Any())
             {
-                _selectedColor = _product.AvailableColors.First();
+                SelectColor(_product.AvailableColorsList.First());
             }
             else
             {
-                _selectedColor = _product.Color;
+                SelectColor(_product.Color);
             }
 
             _breadcrumbs = new List<BreadcrumbItem>
@@ -148,12 +155,28 @@
         _isLoading = false;
     }
 
+    private void SelectColor(string color)
+    {
+        _selectedColor = color;
+        if (_product != null)
+        {
+            if (!string.IsNullOrEmpty(color) && _product.ColorImages != null && _product.ColorImages.TryGetValue(color, out var img))
+            {
+                _currentImageUrl = img;
+            }
+            else
+            {
+                _currentImageUrl = _product.ImageUrl;
+            }
+        }
+    }
+
     private async Task AddToCartAsync()
     {
         if (_product != null)
         {
             var colorStr = _selectedColor as string;
-            if (_product.AvailableColors != null && _product.AvailableColors.Any() && string.IsNullOrEmpty(colorStr))
+            if (_product.AvailableColorsList != null && _product.AvailableColorsList.Any() && string.IsNullOrEmpty(colorStr))
             {
                 Snackbar.Add("Please select a color.", Severity.Warning);
                 return;

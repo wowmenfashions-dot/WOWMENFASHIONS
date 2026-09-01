@@ -1,21 +1,21 @@
 
 <MudNavMenu Margin="Margin.Dense">
-    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-    <MudNavLink Href="/category/mens" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Man">Men's</MudNavLink>
-    <MudNavLink Href="/category/womens" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Woman">Women's</MudNavLink>
-    <MudNavLink Href="/category/kids" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ChildCare">Kids</MudNavLink>
-    <MudNavLink Href="/category/toddler" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.BabyChangingStation">Toddler</MudNavLink>
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Home" IconColor="Color.Primary">Home</MudNavLink>
+    <MudNavLink Href="/category/mens" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Male" IconColor="Color.Info">Men's</MudNavLink>
+    <MudNavLink Href="/category/womens" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Female" IconColor="Color.Secondary">Women's</MudNavLink>
+    <MudNavLink Href="/category/kids" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Toys" IconColor="Color.Success">Kids</MudNavLink>
+    <MudNavLink Href="/category/toddler" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.ChildFriendly" IconColor="Color.Warning">Toddler</MudNavLink>
     <AuthorizeView>
         <Authorized>
             <AuthorizeView Roles="Admin" Context="adminContext">
-                <MudNavLink Href="/admin" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Dashboard">Admin Dashboard</MudNavLink>
+                <MudNavLink Href="/admin" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Dashboard" IconColor="Color.Error">Admin Dashboard</MudNavLink>
             </AuthorizeView>
-            <MudNavLink Href="account/profile" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Profile</MudNavLink>
-            <MudNavLink Href="/api/auth/logout" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Logout">Logout</MudNavLink>
+            <MudNavLink Href="account/profile" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.AccountCircle" IconColor="Color.Primary">Profile</MudNavLink>
+            <MudNavLink Href="/api/auth/logout" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.ExitToApp" IconColor="Color.Dark">Logout</MudNavLink>
         </Authorized>
         <NotAuthorized>
-            <MudNavLink Href="login" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Login">Login</MudNavLink>
-            <MudNavLink Href="register" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PersonAdd">Register</MudNavLink>
+            <MudNavLink Href="login" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Login" IconColor="Color.Success">Login</MudNavLink>
+            <MudNavLink Href="register" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.PersonAdd" IconColor="Color.Info">Register</MudNavLink>
         </NotAuthorized>
     </AuthorizeView>
 </MudNavMenu>

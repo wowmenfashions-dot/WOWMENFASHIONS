@@ -24,8 +24,10 @@
             <PropertyColumn Property="x => x.Id" Title="ID" Editable="false" />
             <PropertyColumn Property="x => x.Name" Title="Name" />
             <PropertyColumn Property="x => x.CategoryId" Title="Cat ID" />
-            <PropertyColumn Property="x => x.Price" Title="Price" />
+            <PropertyColumn Property="x => x.Price" Title="Sale Price" />
+            <PropertyColumn Property="x => x.OriginalPrice" Title="Original Price" />
             <PropertyColumn Property="x => x.ImageUrl" Title="Primary Image" />
+            <PropertyColumn Property="x => x.ColorImagesString" Title="Color Variants (Color=URL;)" />
             <TemplateColumn Title="Actions">
                 <CellTemplate>
                     <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Edit" OnClick="@context.Actions.StartEditingItemAsync" />

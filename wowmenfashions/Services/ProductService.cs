@@ -50,6 +50,26 @@ public class ProductService : IProductService
             }
             catch { /* Ignore if table doesn't exist yet */ }
 
+            var colorImagesQuery = "SELECT ProductId, ColorName, ImageUrl FROM ProductColorImages";
+            try 
+            {
+                var colorImages = await connection.QueryAsync<(int ProductId, string ColorName, string ImageUrl)>(colorImagesQuery);
+                foreach (var p in products)
+                {
+                    var pColorImages = colorImages.Where(i => i.ProductId == p.Id).ToList();
+                    foreach(var ci in pColorImages)
+                    {
+                        p.ColorImages[ci.ColorName] = ci.ImageUrl;
+                    }
+                    if (p.ColorImages.Any())
+                    {
+                        var keys = p.ColorImages.Keys.ToList();
+                        p.AvailableColors = string.Join(",", keys);
+                    }
+                }
+            }
+            catch { /* Ignore if table doesn't exist yet */ }
+
             return products;
         }) ?? Enumerable.Empty<ProductDto>();
     }
@@ -127,6 +147,12 @@ public class ProductService : IProductService
             foreach (var img in product.AdditionalImages)
                 await connection.ExecuteAsync(imgQuery, new { ProductId = product.Id, ImageUrl = img });
         }
+        if (product.ColorImages.Any())
+        {
+            var ciQuery = "INSERT INTO ProductColorImages (ProductId, ColorName, ImageUrl) VALUES (@ProductId, @ColorName, @ImageUrl)";
+            foreach (var kvp in product.ColorImages)
+                await connection.ExecuteAsync(ciQuery, new { ProductId = product.Id, ColorName = kvp.Key, ImageUrl = kvp.Value });
+        }
         
         _cache.Remove("AllProducts");
         return product;
@@ -149,6 +175,14 @@ public class ProductService : IProductService
             var imgQuery = "INSERT INTO ProductImages (ProductId, ImageUrl, IsPrimary) VALUES (@ProductId, @ImageUrl, 0)";
             foreach (var img in product.AdditionalImages)
                 await connection.ExecuteAsync(imgQuery, new { ProductId = product.Id, ImageUrl = img });
+        }
+
+        await connection.ExecuteAsync("DELETE FROM ProductColorImages WHERE ProductId = @Id", new { Id = product.Id });
+        if (product.ColorImages.Any())
+        {
+            var ciQuery = "INSERT INTO ProductColorImages (ProductId, ColorName, ImageUrl) VALUES (@ProductId, @ColorName, @ImageUrl)";
+            foreach (var kvp in product.ColorImages)
+                await connection.ExecuteAsync(ciQuery, new { ProductId = product.Id, ColorName = kvp.Key, ImageUrl = kvp.Value });
         }
 
         _cache.Remove("AllProducts");

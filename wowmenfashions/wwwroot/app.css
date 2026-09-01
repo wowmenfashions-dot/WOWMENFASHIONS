@@ -1,0 +1,38 @@
+/* Elite UI Global Styles */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #FAFAFA;
+    margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6, 
+.mud-typography-h1, .mud-typography-h2, .mud-typography-h3, 
+.mud-typography-h4, .mud-typography-h5, .mud-typography-h6 {
+    font-family: 'Playfair Display', serif !important;
+}
+
+/* Micro animations */
+.hover-lift {
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    border: none !important;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05) !important;
+}
+
+.fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

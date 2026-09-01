@@ -27,6 +27,7 @@ builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IErrorLoggerService, ErrorLoggerService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICheckoutService, CheckoutService>();
 builder.Services.AddScoped<IOrderService, OrderService>();

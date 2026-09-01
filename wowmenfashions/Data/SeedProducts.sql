@@ -26,6 +26,18 @@ BEGIN
 END
 GO
 
+-- Create ProductColorImages Table
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ProductColorImages')
+BEGIN
+    CREATE TABLE ProductColorImages (
+        Id INT IDENTITY(1,1) PRIMARY KEY,
+        ProductId INT NOT NULL FOREIGN KEY REFERENCES Products(Id) ON DELETE CASCADE,
+        ColorName NVARCHAR(50) NOT NULL,
+        ImageUrl NVARCHAR(500) NOT NULL
+    );
+END
+GO
+
 -- Seed Data
 IF NOT EXISTS (SELECT 1 FROM Categories)
 BEGIN

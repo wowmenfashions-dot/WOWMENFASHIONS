@@ -1,9 +1,11 @@
 @using wowmenfashions.Services
 @inject ICartService CartService
 
-<MudBadge Content="_itemCount" Color="Color.Error" Overlap="false" Class="mx-2" Visible="@(_itemCount > 0)">
-    <MudIconButton Href="/cart" Icon="@Icons.Material.Filled.ShoppingCart" Color="Color.Inherit" />
-</MudBadge>
+<div class="mr-4 mt-1">
+    <MudBadge Content="_itemCount" Color="Color.Error" Overlap="true" Origin="Origin.BottomRight" Visible="@(_itemCount > 0)">
+        <MudIconButton Href="/cart" Icon="@Icons.Material.Filled.ShoppingCart" Color="Color.Inherit" />
+    </MudBadge>
+</div>
 
 @code {
     private int _itemCount = 0;

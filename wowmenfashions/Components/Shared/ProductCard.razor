@@ -7,7 +7,7 @@
     <div class="product-image-container position-relative overflow-hidden" style="height: 220px; background-color: #f5f5f5;">
         @if (Product.IsOnSale)
         {
-            <MudChip T="string" Color="Color.Error" Size="Size.Small" Class="sale-badge position-absolute" Style="top: 8px; left: 8px; font-size: 10px; height: 20px; z-index: 10;">Sale!</MudChip>
+            <MudChip T="string" Color="Color.Error" Size="Size.Small" Class="sale-badge" Style="position: absolute; top: 8px; left: 8px; font-size: 10px; height: 20px; z-index: 10;">Sale!</MudChip>
         }
         
         <img src="@(string.IsNullOrWhiteSpace(Product.ImageUrl) ? "https://placehold.co/400x400/e0e0e0/000000.avif?text=No+Image" : Product.ImageUrl)" alt="@Product.Name" style="width: 100%; height: 220px; object-fit: cover;" class="primary-image transition-transform" onerror="this.onerror=null; this.src='https://placehold.co/400x400/e0e0e0/000000.avif?text=No+Image';" />
@@ -26,7 +26,7 @@
         </div>
 
         <div class="w-100" @onclick:stopPropagation="true">
-            <MudButton Variant="Variant.Filled" Color="Color.Dark" StartIcon="@Icons.Material.Filled.ShoppingCart" OnClick="AddToCartAsync" FullWidth="true" Class="rounded-0 py-2" Style="background-color: #4a4a4a; font-weight: 600;">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.ShoppingCart" OnClick="AddToCartAsync" FullWidth="true" Class="rounded-0 py-2" Style="font-weight: 600;">
                 ADD TO CART
             </MudButton>
         </div>

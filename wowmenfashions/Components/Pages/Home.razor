@@ -1,74 +1,194 @@
 @page "/"
 @inject NavigationManager NavigationManager
 
-<PageTitle>WOWMENFASHIONS - Premium Leather Wallets</PageTitle>
+<PageTitle>WOWMENFASHIONS - Premium Leather Bags & Wallets</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 mb-8">
-    <!-- Top Banner -->
-    <MudGrid>
-        <MudItem xs="12">
-            <MudLink Href="/category/mens-wallets">
-                <MudImage Src="/images/banners/rfid_banner.avif" Alt="RFID Protection Wallets" Style="object-fit: cover;" Class="mud-width-full rounded-lg shadow-sm" />
-            </MudLink>
-        </MudItem>
-    </MudGrid>
+<div class="homepage-container pb-16">
+    <!-- Main Carousel -->
+    <MudCarousel Class="mud-width-full carousel-section" Style="height: 400px;" ItemsSource="@Images" AutoCycle="true">
+        <ItemTemplate>
+            <MudImage Src="@context" Style="width: 100%; height: 100%; object-fit: cover;" />
+        </ItemTemplate>
+    </MudCarousel>
 
-    <MudText Typo="Typo.h5" Class="mt-8 mb-4 fw-bold text-center">Shop by Category</MudText>
-    
-    <MudGrid Spacing="4" Class="mb-8">
-        <MudItem xs="6" md="3">
-            <MudCard Elevation="2" Class="cursor-pointer hover-lift" @onclick='@(() => NavigationManager.NavigateTo("/category/bifold-wallets"))'>
-                <MudCardContent Class="text-center pa-6">
-                    <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Large" Color="Color.Primary" Class="mb-2" />
-                    <MudText Typo="Typo.h6">Bifold Wallets</MudText>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-        <MudItem xs="6" md="3">
-            <MudCard Elevation="2" Class="cursor-pointer hover-lift" @onclick='@(() => NavigationManager.NavigateTo("/category/trifold-wallets"))'>
-                <MudCardContent Class="text-center pa-6">
-                    <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Large" Color="Color.Primary" Class="mb-2" />
-                    <MudText Typo="Typo.h6">Trifold Wallets</MudText>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-        <MudItem xs="6" md="3">
-            <MudCard Elevation="2" Class="cursor-pointer hover-lift" @onclick='@(() => NavigationManager.NavigateTo("/category/card-holders"))'>
-                <MudCardContent Class="text-center pa-6">
-                    <MudIcon Icon="@Icons.Material.Filled.CreditCard" Size="Size.Large" Color="Color.Primary" Class="mb-2" />
-                    <MudText Typo="Typo.h6">Card Holders</MudText>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-        <MudItem xs="6" md="3">
-            <MudCard Elevation="2" Class="cursor-pointer hover-lift" @onclick='@(() => NavigationManager.NavigateTo("/category/passport-holders"))'>
-                <MudCardContent Class="text-center pa-6">
-                    <MudIcon Icon="@Icons.Material.Filled.FlightTakeoff" Size="Size.Large" Color="Color.Primary" Class="mb-2" />
-                    <MudText Typo="Typo.h6">Passport Holders</MudText>
-                </MudCardContent>
-            </MudCard>
-        </MudItem>
-    </MudGrid>
+    <!-- QUALITY OF PRODUCT SECTION -->
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-10 mb-10">
+        <MudText Typo="Typo.h5" Align="Align.Center" Class="fw-bold mb-8">QUALITY OF PRODUCT</MudText>
+        <MudGrid Spacing="4" Justify="Justify.Center">
+            <!-- YKK Zippers -->
+            <MudItem xs="12" md="4" Class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Hardware" Size="Size.Large" Color="Color.Warning" Class="mr-4" Style="font-size: 3rem;" />
+                <MudText Typo="Typo.body2">
+                    <strong>We use Zippers from the YKK Brand</strong>, Which is a Global leader in Fastening accessories. So, we are able to provide the worlds best quality zippers in our every products.
+                </MudText>
+            </MudItem>
+            <!-- LWG -->
+            <MudItem xs="12" md="4" Class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Size="Size.Large" Color="Color.Success" Class="mr-4" Style="font-size: 3rem;" />
+                <MudText Typo="Typo.body2">
+                    Our Leather Suppliers are Member of <strong>Leather Working Group</strong> and holding Silver and Gold LWG Certification. Their Leather Processing methods are bounded to US Standards.
+                </MudText>
+            </MudItem>
+            <!-- Eco-Friendly Accessories -->
+            <MudItem xs="12" md="4" Class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Nature" Size="Size.Large" Color="Color.Primary" Class="mr-4" Style="font-size: 3rem;" />
+                <div>
+                    <MudText Typo="Typo.body2" Class="mb-1">• Accessories we use on our products are Eco-friendly, Nickle&Lead free and BV certified.</MudText>
+                    <MudText Typo="Typo.body2">• Accessories are long lasting on color and rust.</MudText>
+                </div>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
 
-    <!-- Bottom Banner -->
-    <MudGrid>
-        <MudItem xs="12">
-            <MudLink Href="/category/womens-wallets">
-                <MudImage Src="/images/banners/zip_wallet_promo.avif" Alt="Womens Zip Around Wallets" Style="object-fit: cover;" Class="mud-width-full rounded-lg shadow-sm" />
-            </MudLink>
-        </MudItem>
-    </MudGrid>
-</MudContainer>
+    <!-- PRODUCT OF THE MONTH PROMO -->
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mb-10">
+        <MudPaper Elevation="3" Class="promo-banner pa-0 overflow-hidden border-solid border-2 border-dark rounded-xl" Style="border-color: #000; position: relative; display: flex; flex-wrap: wrap;">
+            <!-- Left Image Side -->
+            <div class="promo-image-container d-flex justify-center align-center pa-8" style="flex: 1 1 50%; min-width: 300px; background-color: #f8f9fa; position: relative;">
+                <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Style="font-size: 200px; color: #a12c32;" />
+                <div class="discount-badge">
+                    <div class="text-center">
+                        <MudText Typo="Typo.h6" Class="fw-bold lh-1 text-white">FLAT</MudText>
+                        <MudText Typo="Typo.h3" Class="fw-bold lh-1 text-white">33%</MudText>
+                        <MudText Typo="Typo.h6" Class="fw-bold lh-1 text-white">OFF</MudText>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Content Side -->
+            <div class="promo-content-container d-flex flex-column justify-center align-end pa-8 text-right" style="flex: 1 1 50%; min-width: 300px; background-color: #fff;">
+                <MudText Typo="Typo.subtitle1" Class="mb-2 fw-bold" Style="letter-spacing: 2px;">April - 2024</MudText>
+                <MudText Typo="Typo.h5" Class="mb-1" Style="font-family: 'Brush Script MT', cursive; font-style: italic;">Product Of the Month</MudText>
+                <MudText Typo="Typo.h3" Class="fw-bold mb-4 lh-1" Style="font-weight: 900;">ZIP AROUND WALLET<br/>FOR WOMEN</MudText>
+                <MudText Typo="Typo.body1" Class="mb-6" Style="max-width: 400px;">Transforming every moment into a 'wow' moment, where style meets the extraordinary.</MudText>
+                
+                <div class="d-flex align-center justify-end mb-6">
+                    <MudText Typo="Typo.h5" Class="text-decoration-line-through me-4" Style="color: #666;">₹1500</MudText>
+                    <div class="price-badge">
+                        <MudText Typo="Typo.h4" Class="fw-bold text-white mb-0">1000/-</MudText>
+                        <MudText Typo="Typo.subtitle2" Class="text-white text-center">INR</MudText>
+                    </div>
+                </div>
+                
+                <MudButton Variant="Variant.Filled" Color="Color.Dark" Size="Size.Large" Class="rounded-pill px-8 py-2" @onclick='@(() => NavigationManager.NavigateTo("/category/womens"))'>SHOP NOW</MudButton>
+            </div>
+            
+            <div class="vertical-text">Product Of Month April</div>
+        </MudPaper>
+    </MudContainer>
+
+    <!-- 3 IMAGE GALLERY -->
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mb-10">
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="4">
+                <div class="gallery-image bg-light d-flex justify-center align-center" style="height: 300px; border: 4px solid #f1ebd8;">
+                    <MudIcon Icon="@Icons.Material.Filled.ShoppingBag" Style="font-size: 150px; color: #555;" />
+                </div>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <div class="gallery-image d-flex justify-center align-center" style="height: 300px; background-color: #f48fb1; border: 4px solid #f1ebd8;">
+                    <MudIcon Icon="@Icons.Material.Filled.ShoppingBag" Style="font-size: 150px; color: #c2185b;" />
+                </div>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <div class="gallery-image bg-light d-flex justify-center align-center" style="height: 300px; border: 4px solid #f1ebd8;">
+                    <MudIcon Icon="@Icons.Material.Filled.ShoppingBag" Style="font-size: 150px; color: #a12c32;" />
+                </div>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
+
+    <!-- RFID PROTECTION BANNER -->
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mb-10">
+        <MudPaper Elevation="0" Class="rfid-banner d-flex flex-wrap pa-8 align-center justify-space-between" Style="border: 6px dotted #000;">
+            <div style="flex: 1 1 50%; min-width: 300px;">
+                <MudText Typo="Typo.h3" Class="fw-bold mb-2 lh-1" Style="font-family: 'Brush Script MT', cursive;">Safety for Your<br/>Credit and Debit Cards</MudText>
+                <MudText Typo="Typo.subtitle1" Class="mb-8" Style="color: #555;">Safety Feature</MudText>
+                <MudText Typo="Typo.h1" Class="fw-bold lh-1" Style="font-weight: 900; letter-spacing: -2px;">RFID<br/>PROTECTION</MudText>
+                <MudText Typo="Typo.h5" Class="fw-bold" Style="letter-spacing: 2px;">ON ALL WALLETS</MudText>
+            </div>
+            <div class="d-flex justify-center align-center" style="flex: 1 1 50%; min-width: 300px;">
+                <MudIcon Icon="@Icons.Material.Filled.Contactless" Style="font-size: 150px; color: #000;" />
+                <MudIcon Icon="@Icons.Material.Filled.Security" Style="font-size: 150px; color: #000;" />
+            </div>
+        </MudPaper>
+    </MudContainer>
+
+    <!-- FREE DELIVERY BANNER -->
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mb-10">
+        <MudPaper Elevation="3" Class="free-delivery-banner overflow-hidden d-flex flex-wrap align-center" Style="background-color: #e6e6e6; position: relative;">
+            <div class="pa-10" style="flex: 1 1 50%; min-width: 300px; z-index: 2;">
+                <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Style="font-size: 200px; color: #d32f2f;" />
+            </div>
+            <div class="pa-10" style="flex: 1 1 50%; min-width: 300px; z-index: 2;">
+                <MudText Typo="Typo.subtitle1" Class="text-right mb-4">WOWMEN FASHIONS</MudText>
+                <MudText Typo="Typo.h2" Class="fw-bold lh-1 text-right mb-4" Style="font-weight: 900;">Free Delivery<br/>On All Orders</MudText>
+                <MudText Typo="Typo.h5" Class="text-right mb-8">Wow delivery, no extra cost!</MudText>
+                
+                <div class="bg-dark text-white pa-4 text-right">
+                    <MudText>Free delivery throughout India in 3 days.</MudText>
+                </div>
+            </div>
+        </MudPaper>
+    </MudContainer>
+</div>
+
+@code {
+    private List<string> Images = new()
+    {
+        "/images/banners/carousel1.png"
+    };
+}
 
 <style>
-    .hover-lift {
-        transition: transform 0.2s ease-in-out;
+    .homepage-container {
+        overflow-x: hidden;
     }
-    .hover-lift:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    .fw-bold { font-weight: bold; }
+    .lh-1 { line-height: 1; }
+    
+    .discount-badge {
+        position: absolute;
+        right: -40px;
+        top: 20px;
+        background-color: #000;
+        border-radius: 50%;
+        width: 140px;
+        height: 140px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+        border: 4px solid #f8f9fa;
+        transform: rotate(-5deg);
     }
-    .fw-bold {
-        font-weight: bold;
+    
+    .price-badge {
+        background-color: #8c262a;
+        padding: 15px 30px;
+        clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .vertical-text {
+        position: absolute;
+        left: -30px;
+        top: 50%;
+        transform: translateY(-50%) rotate(-90deg);
+        letter-spacing: 4px;
+        font-size: 0.8rem;
+        color: #888;
+        text-transform: uppercase;
+    }
+    
+    .gallery-image {
+        transition: transform 0.3s ease;
+        overflow: hidden;
+    }
+    .gallery-image:hover {
+        transform: scale(1.02);
     }
 </style>

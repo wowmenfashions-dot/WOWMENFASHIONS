@@ -1,4 +1,4 @@
-CREATE PROCEDURE [dbo].[Cart_AddItem]
+CREATE OR ALTER PROCEDURE [dbo].[Cart_AddItem]
     @GuestCartId UNIQUEIDENTIFIER = NULL,
     @CustomerId INT = NULL,
     @ProductId INT,
