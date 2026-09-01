@@ -1,0 +1,8 @@
+.custom-category-list ::deep .mud-list-item {
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.custom-category-list ::deep .mud-list-item:hover {
+    color: var(--mud-palette-primary);
+}

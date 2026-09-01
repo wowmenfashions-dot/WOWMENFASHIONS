@@ -1,0 +1,177 @@
+@page "/cart"
+@using wowmenfashions.Models
+@using wowmenfashions.Services
+@inject ICartService CartService
+@inject IProductService ProductService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Shopping Cart - WOWMENFASHIONS</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-6">
+    <MudText Typo="Typo.h4" Class="fw-bold mb-4">Your Cart</MudText>
+
+    @if (_isLoading)
+    {
+        <MudProgressCircular Indeterminate="true" Color="Color.Primary" Class="d-block mx-auto mt-8" />
+    }
+    else if (!_cartItems.Any())
+    {
+        <MudPaper Elevation="0" Class="pa-8 text-center bg-transparent border rounded-lg">
+            <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Size="Size.Large" Color="Color.Default" Class="mb-4 text-muted" Style="font-size: 4rem;" />
+            <MudText Typo="Typo.h5" Class="mb-4">Your cart is empty.</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Dark" Size="Size.Large" OnClick="@(() => Navigation.NavigateTo("/"))" Class="px-8 py-3 rounded-pill fw-bold">
+                Continue Shopping
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="8">
+                <MudPaper Elevation="0" Class="pa-2 bg-transparent border rounded-lg">
+                    <MudTable Items="_cartItems" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Class="bg-transparent" Dense="true">
+                        <HeaderContent>
+                            <MudTh>Product</MudTh>
+                            <MudTh>Price</MudTh>
+                            <MudTh>Quantity</MudTh>
+                            <MudTh>Total</MudTh>
+                            <MudTh></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Product">
+                                <div class="d-flex align-center">
+                                    <MudImage Src="@context.Product.ImageUrl" Alt="@context.Product.Name" Style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;" Class="me-4" />
+                                    <div>
+                                        <MudText Typo="Typo.subtitle1" Class="fw-bold">@context.Product.Name</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Default" Class="text-muted">Color: @context.Product.Color</MudText>
+                                    </div>
+                                </div>
+                            </MudTd>
+                            <MudTd DataLabel="Price">@context.Product.Price.ToString("C")</MudTd>
+                            <MudTd DataLabel="Quantity">
+                                <MudNumericField Value="@context.Quantity" ValueChanged="@((int v) => UpdateQuantityAsync(context.Id, v))" Min="1" Max="10" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 80px;" />
+                            </MudTd>
+                            <MudTd DataLabel="Total" Class="fw-bold">
+                                @((context.Product.Price * context.Quantity).ToString("C"))
+                            </MudTd>
+                            <MudTd DataLabel="Actions" Class="text-end">
+                                <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline" Color="Color.Error" Size="Size.Small" OnClick="@(() => RemoveItemAsync(context.Id))" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="4">
+                <MudPaper Elevation="0" Class="pa-3 border rounded-lg" Style="background-color: #f9f9f9;">
+                    <MudText Typo="Typo.h6" Class="fw-bold mb-4">Order Summary</MudText>
+                    
+                    <div class="d-flex justify-space-between mb-2">
+                        <MudText Typo="Typo.body2" Class="text-muted">Subtotal</MudText>
+                        <MudText Typo="Typo.body2" Class="fw-bold">@_subtotal.ToString("C")</MudText>
+                    </div>
+                    
+                    <div class="d-flex justify-space-between mb-2">
+                        <MudText Typo="Typo.body2" Class="text-muted">Shipping (Flat Rate)</MudText>
+                        <MudText Typo="Typo.body2" Class="fw-bold">@_shipping.ToString("C")</MudText>
+                    </div>
+
+                    <div class="d-flex justify-space-between mb-2">
+                        <MudText Typo="Typo.body2" Class="text-muted">GST (10%)</MudText>
+                        <MudText Typo="Typo.body2" Class="fw-bold">@_tax.ToString("C")</MudText>
+                    </div>
+
+                    <MudDivider Class="my-2" />
+
+                    <div class="d-flex justify-space-between mb-4">
+                        <MudText Typo="Typo.subtitle1" Class="fw-bold">Total</MudText>
+                        <MudText Typo="Typo.subtitle1" Class="fw-bold">@_finalTotal.ToString("C")</MudText>
+                    </div>
+
+                    <MudButton Href="/checkout" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" FullWidth="true" Class="py-2 rounded-pill fw-bold">
+                        Proceed to Checkout
+                    </MudButton>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private bool _isLoading = true;
+    private List<CartItemViewModel> _cartItems = new();
+    
+    private decimal _subtotal => _cartItems.Sum(i => i.Product.Price * i.Quantity);
+    private decimal _shipping => _cartItems.Any() ? 10.00m : 0m;
+    private decimal _tax => _subtotal * 0.10m;
+    private decimal _finalTotal => _subtotal + _shipping + _tax;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCartAsync();
+    }
+
+    private async Task LoadCartAsync()
+    {
+        _isLoading = true;
+        
+        var cartSession = await CartService.GetCartAsync();
+        _cartItems.Clear();
+
+        if (cartSession != null && cartSession.Items != null)
+        {
+            foreach (var item in cartSession.Items)
+            {
+                var product = await ProductService.GetProductByIdAsync(item.ProductId);
+                if (product != null)
+                {
+                    _cartItems.Add(new CartItemViewModel
+                    {
+                        Id = item.Id,
+                        ProductId = item.ProductId,
+                        Quantity = item.Quantity,
+                        Product = product
+                    });
+                }
+            }
+        }
+        
+        _isLoading = false;
+    }
+
+    private async Task UpdateQuantityAsync(int itemId, int newQuantity)
+    {
+        try
+        {
+            await CartService.UpdateItemQuantityAsync(itemId, newQuantity);
+            await LoadCartAsync();
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("Failed to update quantity.", Severity.Error);
+        }
+    }
+
+    private async Task RemoveItemAsync(int itemId)
+    {
+        try
+        {
+            await CartService.RemoveItemAsync(itemId);
+            await LoadCartAsync();
+            Snackbar.Add("Item removed from cart.", Severity.Info);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("Failed to remove item.", Severity.Error);
+        }
+    }
+
+    private class CartItemViewModel
+    {
+        public int Id { get; set; }
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
+        public ProductDto Product { get; set; } = null!;
+    }
+}

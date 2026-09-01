@@ -1,0 +1,40 @@
+@page "/login"
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using System.Security.Claims
+@using wowmenfashions.Services
+@inject ICustomerService CustomerService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<PageTitle>Login - WOWMENFASHIONS</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+    <MudPaper Class="pa-8">
+        <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-6">Login</MudText>
+
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-4">@ErrorMessage</MudAlert>
+        }
+
+        <form action="/api/auth/login" method="post">
+            <AntiforgeryToken />
+            <MudTextField T="string" name="email" Label="Email Address" Required="true" Class="mb-4" />
+            <MudTextField T="string" name="password" Label="Password" InputType="InputType.Password" Required="true" Class="mb-6" />
+
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true">
+                Login
+            </MudButton>
+        </form>
+
+        <MudText Align="Align.Center" Class="mt-4">
+            Don't have an account? <MudLink Href="/register">Register here</MudLink>
+        </MudText>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery]
+    public string? ErrorMessage { get; set; }
+}

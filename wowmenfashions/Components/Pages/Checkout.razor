@@ -1,0 +1,296 @@
+@page "/checkout"
+@using wowmenfashions.Models
+@using wowmenfashions.Services
+@using wowmenfashions.Data.Entities
+@inject ICartService CartService
+@inject ICheckoutService CheckoutService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
+@inject ICustomerService CustomerService
+
+<PageTitle>Checkout - WOWMEN</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-8">
+    <MudText Typo="Typo.h4" Class="mb-6 fw-bold">Checkout</MudText>
+
+    @if (ShoppingCart == null || !ShoppingCart.Items.Any())
+    {
+        @if (!IsOrderPlaced)
+        {
+            <MudAlert Severity="Severity.Info">Your cart is empty.</MudAlert>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" Href="/" Class="mt-4">Continue Shopping</MudButton>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Success" Variant="Variant.Filled" Class="mb-4">
+                Thank you for your order! Your payment has been processed successfully.
+            </MudAlert>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" Href="/" Class="mt-4">Continue Shopping</MudButton>
+        }
+    }
+    else
+    {
+        <MudGrid>
+            <!-- Checkout Form -->
+            <MudItem xs="12" md="7">
+                <MudCard Elevation="3" Class="pa-4">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Shipping & Billing Details</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <EditForm Model="@CheckoutModel" OnValidSubmit="PlaceOrderAsync">
+                            <DataAnnotationsValidator />
+                            <MudGrid>
+                                <MudItem xs="12">
+                                    <MudTextField @bind-Value="CheckoutModel.FullName" Label="Full Name" For="@(() => CheckoutModel.FullName)" Required="true" />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudTextField @bind-Value="CheckoutModel.Email" Label="Email Address" For="@(() => CheckoutModel.Email)" Required="true" />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudTextField @bind-Value="CheckoutModel.Address" Label="Shipping Address" For="@(() => CheckoutModel.Address)" Required="true" />
+                                </MudItem>
+                                <MudItem xs="12" sm="4">
+                                    <MudTextField @bind-Value="CheckoutModel.City" Label="City" For="@(() => CheckoutModel.City)" Required="true" />
+                                </MudItem>
+                                <MudItem xs="12" sm="4">
+                                    <MudTextField @bind-Value="CheckoutModel.PostalCode" Label="Postal Code" For="@(() => CheckoutModel.PostalCode)" Required="true" />
+                                </MudItem>
+                                <MudItem xs="12" sm="4">
+                                    <MudTextField @bind-Value="CheckoutModel.Country" Label="Country" For="@(() => CheckoutModel.Country)" Required="true" />
+                                </MudItem>
+
+                                <!-- Dummy Payment Section -->
+                                <MudItem xs="12" Class="mt-4">
+                                    <MudText Typo="Typo.subtitle1" Class="mb-2 fw-bold">Payment Details</MudText>
+                                    <MudDivider Class="mb-4" />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudTextField @bind-Value="CheckoutModel.CardNumber" Label="Card Number (16 digits)" For="@(() => CheckoutModel.CardNumber)" Required="true" MaxLength="16" />
+                                </MudItem>
+                                <MudItem xs="6">
+                                    <MudTextField @bind-Value="CheckoutModel.ExpiryDate" Label="Expiry Date (MM/YY)" For="@(() => CheckoutModel.ExpiryDate)" Required="true" MaxLength="5" />
+                                </MudItem>
+                                <MudItem xs="6">
+                                    <MudTextField @bind-Value="CheckoutModel.Cvv" Label="CVV" For="@(() => CheckoutModel.Cvv)" Required="true" MaxLength="4" />
+                                </MudItem>
+
+                                <MudItem xs="12" Class="mt-6">
+                                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" Disabled="@IsProcessing">
+                                        @if (IsProcessing)
+                                        {
+                                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                                            <MudText Class="ms-2">Processing Payment...</MudText>
+                                        }
+                                        else
+                                        {
+                                            <MudText>Place Order • @FinalTotal.ToString("C")</MudText>
+                                        }
+                                    </MudButton>
+                                </MudItem>
+                            </MudGrid>
+                        </EditForm>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- Order Summary -->
+            <MudItem xs="12" md="5">
+                <MudCard Elevation="3" Class="pa-4" Style="background-color: var(--mud-palette-background-grey);">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Order Summary</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @foreach (var item in ShoppingCart.Items)
+                        {
+                            <MudGrid Class="align-center mb-3">
+                                <MudItem xs="3">
+                                    @{
+                                        string imgUrl = string.IsNullOrWhiteSpace(item.ProductImageUrl) ? "/images/dummy-product.avif" : item.ProductImageUrl;
+                                    }
+                                    <MudImage Src="@imgUrl" Alt="@item.ProductName" Fluid="true" ObjectFit="ObjectFit.Cover" Style="border-radius: 8px; aspect-ratio: 1;" />
+                                </MudItem>
+                                <MudItem xs="6">
+                                    <MudText Typo="Typo.body2" Class="fw-bold">@item.ProductName</MudText>
+                                    <MudText Typo="Typo.caption">Qty: @item.Quantity</MudText>
+                                </MudItem>
+                                <MudItem xs="3" Class="d-flex justify-end">
+                                    <MudText Typo="Typo.body2">@((item.UnitPrice * item.Quantity).ToString("C"))</MudText>
+                                </MudItem>
+                            </MudGrid>
+                        }
+
+                        <MudDivider Class="my-4" />
+                        
+                        <!-- Coupon Section -->
+                        <div class="d-flex align-center mb-4">
+                            <MudTextField @bind-Value="CouponCode" Label="Coupon Code" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mr-2" />
+                            <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="ApplyCoupon" Disabled="@(!string.IsNullOrWhiteSpace(AppliedCoupon))">Apply</MudButton>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(AppliedCoupon))
+                        {
+                            <MudAlert Severity="Severity.Success" Dense="true" Class="mb-4">Coupon '@AppliedCoupon' applied (10% off)</MudAlert>
+                        }
+
+                        <MudGrid Class="mb-1">
+                            <MudItem xs="6"><MudText Typo="Typo.body2">Subtotal</MudText></MudItem>
+                            <MudItem xs="6" Class="d-flex justify-end"><MudText Typo="Typo.body2">@Subtotal.ToString("C")</MudText></MudItem>
+                        </MudGrid>
+                        
+                        @if (DiscountAmount > 0)
+                        {
+                            <MudGrid Class="mb-1" Style="color: var(--mud-palette-success);">
+                                <MudItem xs="6"><MudText Typo="Typo.body2">Discount (10%)</MudText></MudItem>
+                                <MudItem xs="6" Class="d-flex justify-end"><MudText Typo="Typo.body2">-@DiscountAmount.ToString("C")</MudText></MudItem>
+                            </MudGrid>
+                        }
+
+                        <MudGrid Class="mb-1">
+                            <MudItem xs="6"><MudText Typo="Typo.body2">Shipping (Flat Rate)</MudText></MudItem>
+                            <MudItem xs="6" Class="d-flex justify-end"><MudText Typo="Typo.body2">@ShippingFee.ToString("C")</MudText></MudItem>
+                        </MudGrid>
+                        
+                        <MudGrid Class="mb-1">
+                            <MudItem xs="6"><MudText Typo="Typo.body2">GST (10%)</MudText></MudItem>
+                            <MudItem xs="6" Class="d-flex justify-end"><MudText Typo="Typo.body2">@TaxAmount.ToString("C")</MudText></MudItem>
+                        </MudGrid>
+                        
+                        <MudDivider Class="my-4" />
+                        
+                        <MudGrid>
+                            <MudItem xs="6"><MudText Typo="Typo.h6" Class="fw-bold">Total</MudText></MudItem>
+                            <MudItem xs="6" Class="d-flex justify-end"><MudText Typo="Typo.h6" Class="fw-bold">@FinalTotal.ToString("C")</MudText></MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private wowmenfashions.Data.Entities.Cart? ShoppingCart;
+    private CheckoutModel CheckoutModel = new();
+    
+    private bool IsProcessing = false;
+    private bool IsOrderPlaced = false;
+
+    private string CouponCode = string.Empty;
+    private string AppliedCoupon = string.Empty;
+
+    // Calculations
+    private decimal Subtotal => ShoppingCart?.Items.Sum(i => i.UnitPrice * i.Quantity) ?? 0;
+    private decimal DiscountAmount => !string.IsNullOrWhiteSpace(AppliedCoupon) ? Subtotal * 0.10m : 0m;
+    private decimal SubtotalAfterDiscount => Subtotal - DiscountAmount;
+    private decimal ShippingFee => ShoppingCart != null && ShoppingCart.Items.Any() ? 10.00m : 0m; // Flat rate $10
+    private decimal TaxAmount => SubtotalAfterDiscount * 0.10m; // 10% GST
+    private decimal FinalTotal => SubtotalAfterDiscount + ShippingFee + TaxAmount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ShoppingCart = await CartService.GetCartAsync();
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            var email = authState.User.Identity.Name;
+            if (!string.IsNullOrEmpty(email))
+            {
+                var customer = await CustomerService.GetCustomerByEmailAsync(email);
+                if (customer != null)
+                {
+                    CheckoutModel.FullName = $"{customer.FirstName} {customer.LastName}".Trim();
+                    CheckoutModel.Email = customer.Email ?? "";
+                    
+                    var addresses = await CustomerService.GetAddressesAsync(customer.Id);
+                    var defaultShipping = addresses.FirstOrDefault(a => a.IsDefaultShipping);
+                    if (defaultShipping != null)
+                    {
+                        CheckoutModel.FullName = defaultShipping.FullName;
+                        CheckoutModel.Address = defaultShipping.AddressLine;
+                        CheckoutModel.City = defaultShipping.City;
+                        CheckoutModel.PostalCode = defaultShipping.PostalCode;
+                        CheckoutModel.Country = defaultShipping.Country;
+                    }
+                }
+            }
+        }
+    }
+
+    private void ApplyCoupon()
+    {
+        if (CouponCode?.Trim().ToUpperInvariant() == "DISCOUNT10")
+        {
+            AppliedCoupon = "DISCOUNT10";
+            Snackbar.Add("10% Discount applied!", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("Invalid coupon code.", Severity.Error);
+        }
+    }
+
+    private async Task PlaceOrderAsync()
+    {
+        if (ShoppingCart == null || !ShoppingCart.Items.Any())
+            return;
+
+        IsProcessing = true;
+        StateHasChanged();
+
+        try
+        {
+            // Simulate Payment Gateway Delay
+            bool paymentSuccess = await CheckoutService.ProcessPaymentAsync(CheckoutModel);
+
+            if (paymentSuccess)
+            {
+                var orderDto = new OrderDto
+                {
+                    Subtotal = Subtotal,
+                    ShippingFee = ShippingFee,
+                    TaxAmount = TaxAmount,
+                    DiscountAmount = DiscountAmount,
+                    TotalAmount = FinalTotal,
+                    Status = "PaymentCompleted",
+                    CustomerName = CheckoutModel.FullName,
+                    CustomerEmail = CheckoutModel.Email,
+                    ShippingAddress = $"{CheckoutModel.Address}, {CheckoutModel.City}, {CheckoutModel.PostalCode}, {CheckoutModel.Country}",
+                    Items = ShoppingCart.Items.Select(i => new OrderItemDto
+                    {
+                        ProductId = i.ProductId,
+                        ProductName = i.ProductName ?? "Unknown Product",
+                        Price = i.UnitPrice,
+                        Quantity = i.Quantity,
+                        SelectedColor = i.SelectedColor
+                    }).ToList()
+                };
+
+                // Save Order to DB
+                await CheckoutService.PlaceOrderAsync(orderDto);
+
+                // Clear Cart
+                foreach(var item in ShoppingCart.Items)
+                {
+                    await CartService.RemoveItemAsync(item.Id);
+                }
+
+                IsOrderPlaced = true;
+                ShoppingCart = null;
+            }
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("An error occurred processing your order.", Severity.Error);
+        }
+        finally
+        {
+            IsProcessing = false;
+        }
+    }
+}

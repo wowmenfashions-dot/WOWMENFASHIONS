@@ -1,0 +1,89 @@
+@page "/admin"
+@using Microsoft.AspNetCore.Authorization
+@using MudBlazor
+@using wowmenfashions.Models
+@using wowmenfashions.Services
+@attribute [Authorize]
+
+<PageTitle>Admin Dashboard</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h4">Product Management</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" Href="/api/auth/logout">Logout</MudButton>
+    </div>
+    <MudDataGrid T="ProductDto" Items="@_products" ReadOnly="false" EditMode="DataGridEditMode.Form"
+                 CommittedItemChanges="@( async (ProductDto item) => { await CommittedItemChanges(item); return default; } )"
+                 Bordered="true" Dense="true">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Products</MudText>
+            <MudSpacer />
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="@AddNewProduct">Add Product</MudButton>
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x.Id" Title="ID" Editable="false" />
+            <PropertyColumn Property="x => x.Name" Title="Name" />
+            <PropertyColumn Property="x => x.CategoryId" Title="Cat ID" />
+            <PropertyColumn Property="x => x.Price" Title="Price" />
+            <PropertyColumn Property="x => x.ImageUrl" Title="Primary Image" />
+            <TemplateColumn Title="Actions">
+                <CellTemplate>
+                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteProduct(context.Item))" />
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+    </MudDataGrid>
+</MudContainer>
+
+@code {
+    [Inject] private IProductService ProductService { get; set; } = default!;
+    [Inject] private ISnackbar Snackbar { get; set; } = default!;
+    
+    private IEnumerable<ProductDto> _products = new List<ProductDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProducts();
+    }
+
+    private async Task LoadProducts()
+    {
+        var result = await ProductService.GetProductsAsync(pageSize: 1000);
+        _products = result.Products;
+    }
+
+    private void AddNewProduct()
+    {
+        // Simple fallback for adding, ideally open a dialog. For MVP, we can insert a dummy and let user edit.
+        var newProduct = new ProductDto { Name = "New Product", Price = 0, CategoryId = 1, Category = "Mens" };
+        _ = ProductService.CreateProductAsync(newProduct).ContinueWith(async t => 
+        {
+            await LoadProducts();
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private void StartedEditingItem(ProductDto item)
+    {
+    }
+
+    private void CanceledEditingItem(ProductDto item)
+    {
+    }
+
+    private async Task CommittedItemChanges(ProductDto item)
+    {
+        await ProductService.UpdateProductAsync(item);
+        Snackbar.Add("Product updated", Severity.Success);
+        await LoadProducts();
+        StateHasChanged();
+    }
+
+    private async Task DeleteProduct(ProductDto item)
+    {
+        await ProductService.DeleteProductAsync(item.Id);
+        Snackbar.Add("Product deleted", Severity.Success);
+        await LoadProducts();
+    }
+}

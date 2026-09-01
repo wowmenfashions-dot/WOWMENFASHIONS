@@ -1,0 +1,79 @@
+@page "/admin/orders"
+@using Microsoft.AspNetCore.Authorization
+@using MudBlazor
+@using wowmenfashions.Models
+@using wowmenfashions.Services
+@attribute [Authorize]
+@inject IOrderService OrderService
+@inject ISnackbar Snackbar
+
+<PageTitle>Admin - Order Management</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h4">Order Management</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/admin">Products</MudButton>
+    </div>
+    
+    <MudDataGrid T="OrderDto" Items="@_orders" ReadOnly="false" EditMode="DataGridEditMode.Form"
+                 CommittedItemChanges="@( async (OrderDto item) => { await CommittedItemChanges(item); return default; } )"
+                 Bordered="true" Dense="true">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Orders</MudText>
+            <MudSpacer />
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x.Id" Title="ID" Editable="false" />
+            <PropertyColumn Property="x => x.OrderDate" Title="Date" Editable="false" />
+            <PropertyColumn Property="x => x.TotalAmount" Title="Total" Editable="false" />
+            
+            <TemplateColumn Title="Status">
+                <CellTemplate>
+                    <MudChip T="string" Color="Color.Primary" Size="Size.Small">@context.Item.Status</MudChip>
+                </CellTemplate>
+                <EditTemplate>
+                    <MudSelect @bind-Value="context.Item.Status" Margin="Margin.Dense">
+                        <MudSelectItem Value="@("PaymentCompleted")">PaymentCompleted</MudSelectItem>
+                        <MudSelectItem Value="@("Processing")">Processing</MudSelectItem>
+                        <MudSelectItem Value="@("InTransit")">InTransit</MudSelectItem>
+                        <MudSelectItem Value="@("Delivered")">Delivered</MudSelectItem>
+                        <MudSelectItem Value="@("Cancelled")">Cancelled</MudSelectItem>
+                    </MudSelect>
+                </EditTemplate>
+            </TemplateColumn>
+
+            <PropertyColumn Property="x => x.CourierName" Title="Courier" />
+            <PropertyColumn Property="x => x.TrackingNumber" Title="Tracking No." />
+            <PropertyColumn Property="x => x.TrackingUrl" Title="Tracking URL" />
+            
+            <TemplateColumn Title="Actions">
+                <CellTemplate>
+                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+    </MudDataGrid>
+</MudContainer>
+
+@code {
+    private IEnumerable<OrderDto> _orders = new List<OrderDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrders();
+    }
+
+    private async Task LoadOrders()
+    {
+        _orders = await OrderService.GetAllOrdersAsync();
+    }
+
+    private async Task CommittedItemChanges(OrderDto item)
+    {
+        await OrderService.UpdateOrderStatusAsync(item.Id, item.Status);
+        await OrderService.UpdateOrderTrackingAsync(item.Id, item.CourierName ?? "", item.TrackingNumber ?? "", item.TrackingUrl ?? "");
+        Snackbar.Add($"Order #{item.Id} updated successfully", Severity.Success);
+        await LoadOrders();
+        StateHasChanged();
+    }
+}

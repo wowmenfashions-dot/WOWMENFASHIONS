@@ -1,0 +1,115 @@
+@page "/account/orders"
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
+@using wowmenfashions.Services
+@using wowmenfashions.Models
+@attribute [Authorize]
+@inject ICustomerService CustomerService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ISnackbar Snackbar
+
+<PageTitle>Order History - WOWMENFASHIONS</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
+    <MudText Typo="Typo.h4" Class="mb-6">My Profile</MudText>
+
+    <MudGrid>
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-4">
+                <MudNavMenu>
+                    <MudNavLink Href="/account/profile" Icon="@Icons.Material.Filled.Person">Profile Information</MudNavLink>
+                    <MudNavLink Href="/account/orders" Icon="@Icons.Material.Filled.ShoppingBag">Order History</MudNavLink>
+                </MudNavMenu>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="8">
+            <MudPaper Class="pa-6">
+                <MudText Typo="Typo.h5" Class="mb-4">Order History</MudText>
+                @if (_isLoading)
+                {
+                    <MudProgressCircular Indeterminate="true" />
+                }
+                else if (!_orders.Any())
+                {
+                    <MudAlert Severity="Severity.Info">You have not placed any orders yet.</MudAlert>
+                }
+                else
+                {
+                    @foreach (var order in _orders)
+                    {
+                        <MudCard Class="mb-4" Elevation="1">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText Typo="Typo.subtitle1">Order #@order.Id</MudText>
+                                    <MudText Typo="Typo.body2" Class="text-muted">Placed on @order.OrderDate.ToString("MMMM dd, yyyy")</MudText>
+                                </CardHeaderContent>
+                                <CardHeaderActions>
+                                    <MudChip T="string" Color="Color.Primary" Size="Size.Small">@order.Status</MudChip>
+                                </CardHeaderActions>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                @if (!string.IsNullOrEmpty(order.TrackingUrl) || !string.IsNullOrEmpty(order.TrackingNumber))
+                                {
+                                    <div class="mb-4">
+                                        <MudText Typo="Typo.body2">
+                                            <strong>Tracking:</strong> 
+                                            @if (!string.IsNullOrEmpty(order.CourierName))
+                                            {
+                                                @order.CourierName <text> - </text>
+                                            }
+                                            @if (!string.IsNullOrEmpty(order.TrackingUrl))
+                                            {
+                                                <MudLink Href="@order.TrackingUrl" Target="_blank" Color="Color.Primary">@order.TrackingNumber</MudLink>
+                                            }
+                                            else
+                                            {
+                                                @order.TrackingNumber
+                                            }
+                                        </MudText>
+                                    </div>
+                                    <MudDivider Class="mb-4" />
+                                }
+                                <MudTable Items="order.Items" Dense="true" Hover="false" Elevation="0">
+                                    <HeaderContent>
+                                        <MudTh>Product</MudTh>
+                                        <MudTh>Color</MudTh>
+                                        <MudTh Style="text-align:right">Price</MudTh>
+                                        <MudTh Style="text-align:right">Qty</MudTh>
+                                    </HeaderContent>
+                                    <RowTemplate>
+                                        <MudTd DataLabel="Product">@context.ProductName</MudTd>
+                                        <MudTd DataLabel="Color">@(string.IsNullOrEmpty(context.SelectedColor) ? "N/A" : context.SelectedColor)</MudTd>
+                                        <MudTd DataLabel="Price" Style="text-align:right">@context.Price.ToString("C")</MudTd>
+                                        <MudTd DataLabel="Qty" Style="text-align:right">@context.Quantity</MudTd>
+                                    </RowTemplate>
+                                </MudTable>
+                                <div class="d-flex justify-end mt-4">
+                                    <MudText Typo="Typo.h6">Total: @order.TotalAmount.ToString("C")</MudText>
+                                </div>
+                            </MudCardContent>
+                        </MudCard>
+                    }
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private bool _isLoading = true;
+    private IEnumerable<OrderDto> _orders = new List<OrderDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var email = user.Identity?.Name;
+
+        if (!string.IsNullOrEmpty(email))
+        {
+            _orders = await CustomerService.GetOrdersByEmailAsync(email);
+        }
+        
+        _isLoading = false;
+    }
+}

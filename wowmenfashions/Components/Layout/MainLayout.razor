@@ -1,0 +1,91 @@
+@inherits LayoutComponentBase
+
+
+<MudThemeProvider Theme="@_theme" IsDarkMode="_isDarkMode" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudLayout>
+    <MudAppBar Elevation="0" Dense="true">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" Size="Size.Small" OnClick="DrawerToggle" />
+        <MudText Typo="Typo.h6" Class="ml-2">WOWMEN</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" Size="Size.Small" />
+        <wowmenfashions.Components.Shared.CartWidget />
+    </MudAppBar>
+    <MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="0">
+        <NavMenu />
+    </MudDrawer>
+    <MudMainContent Class="pt-4 pa-2">
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+    private bool _drawerOpen = true;
+    private bool _isDarkMode = false;
+    private MudTheme? _theme = null;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        _theme = new()
+        {
+            PaletteLight = _lightPalette,
+            PaletteDark = _darkPalette,
+            LayoutProperties = new LayoutProperties()
+        };
+    }
+
+    private void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private void DarkModeToggle()
+    {
+        _isDarkMode = !_isDarkMode;
+    }
+
+    private readonly PaletteLight _lightPalette = new()
+    {
+        Primary = "#1A237E",
+        Secondary = "#D4AF37",
+        AppbarBackground = "#FFFFFF",
+        AppbarText = "#1A237E",
+        DrawerBackground = "#F8F9FA",
+        Background = "#FAFAFA",
+        Surface = "#FFFFFF",
+        TextPrimary = "#212121",
+        TextSecondary = "#757575"
+    };
+
+    private readonly PaletteDark _darkPalette = new()
+    {
+        Primary = "#D4AF37",
+        Secondary = "#1A237E",
+        AppbarBackground = "#121212",
+        AppbarText = "#D4AF37",
+        DrawerBackground = "#1A1A1A",
+        Background = "#121212",
+        Surface = "#1E1E1E",
+        TextPrimary = "#F5F5F5",
+        TextSecondary = "#BDBDBD"
+    };
+
+    public string DarkLightModeButtonIcon => _isDarkMode switch
+    {
+        true => Icons.Material.Rounded.AutoMode,
+        false => Icons.Material.Outlined.DarkMode,
+    };
+}
+
+

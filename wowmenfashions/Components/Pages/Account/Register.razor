@@ -1,0 +1,96 @@
+@page "/register"
+@using wowmenfashions.Services
+@inject ICustomerService CustomerService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<PageTitle>Register - WOWMENFASHIONS</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+    <MudPaper Class="pa-8">
+        <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-6">Create Account</MudText>
+
+        <MudForm @ref="_form" @bind-IsValid="@_success">
+            <MudTextField @bind-Value="_model.FirstName" Label="First Name" Required="true" RequiredError="First name is required" Class="mb-4" />
+            <MudTextField @bind-Value="_model.LastName" Label="Last Name" Required="true" RequiredError="Last name is required" Class="mb-4" />
+            <MudTextField @bind-Value="_model.Email" Label="Email Address" Required="true" RequiredError="Email is required" 
+                          Validation="@(new EmailAddressAttribute() {ErrorMessage = "Invalid email format"})" Class="mb-4" />
+            <MudTextField @bind-Value="_model.Phone" Label="Phone Number (Optional)" Class="mb-4" />
+            
+            <MudTextField @bind-Value="_model.Password" Label="Password" InputType="InputType.Password" 
+                          Required="true" RequiredError="Password is required" Class="mb-4" />
+            <MudTextField @bind-Value="_model.ConfirmPassword" Label="Confirm Password" InputType="InputType.Password" 
+                          Required="true" RequiredError="Confirm password is required" 
+                          Validation="@(new Func<string, string?>(MatchPasswords))" Class="mb-6" />
+
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" 
+                       Disabled="@(!_success || _isProcessing)" OnClick="SubmitRegister">
+                @if (_isProcessing)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                    <MudText Class="ms-2">Registering...</MudText>
+                }
+                else
+                {
+                    <MudText>Register</MudText>
+                }
+            </MudButton>
+
+            <MudText Align="Align.Center" Class="mt-4">
+                Already have an account? <MudLink Href="/login">Login here</MudLink>
+            </MudText>
+        </MudForm>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private MudForm _form = null!;
+    private bool _success;
+    private bool _isProcessing = false;
+    private RegisterModel _model = new();
+
+    private string? MatchPasswords(string confirmPassword)
+    {
+        if (_model.Password != confirmPassword)
+            return "Passwords do not match.";
+        return null;
+    }
+
+    private async Task SubmitRegister()
+    {
+        await _form.ValidateAsync();
+        if (_form.IsValid)
+        {
+            _isProcessing = true;
+            try
+            {
+                var result = await CustomerService.RegisterAsync(
+                    _model.FirstName, _model.LastName, _model.Email, _model.Password, _model.Phone);
+
+                if (result.Success)
+                {
+                    Snackbar.Add("Registration successful! Please login.", Severity.Success);
+                    NavigationManager.NavigateTo("/login");
+                }
+                else
+                {
+                    Snackbar.Add(result.ErrorMessage, Severity.Error);
+                }
+            }
+            finally
+            {
+                _isProcessing = false;
+            }
+        }
+    }
+
+    public class RegisterModel
+    {
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string? Phone { get; set; }
+        public string Password { get; set; } = string.Empty;
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+}

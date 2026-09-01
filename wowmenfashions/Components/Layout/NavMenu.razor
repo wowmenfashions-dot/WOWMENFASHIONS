@@ -1,0 +1,23 @@
+
+<MudNavMenu Margin="Margin.Dense">
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+    <MudNavLink Href="/category/mens" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Man">Men's</MudNavLink>
+    <MudNavLink Href="/category/womens" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Woman">Women's</MudNavLink>
+    <MudNavLink Href="/category/kids" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ChildCare">Kids</MudNavLink>
+    <MudNavLink Href="/category/toddler" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.BabyChangingStation">Toddler</MudNavLink>
+    <AuthorizeView>
+        <Authorized>
+            <AuthorizeView Roles="Admin" Context="adminContext">
+                <MudNavLink Href="/admin" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Dashboard">Admin Dashboard</MudNavLink>
+            </AuthorizeView>
+            <MudNavLink Href="account/profile" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Person">Profile</MudNavLink>
+            <MudNavLink Href="/api/auth/logout" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Logout">Logout</MudNavLink>
+        </Authorized>
+        <NotAuthorized>
+            <MudNavLink Href="login" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Login">Login</MudNavLink>
+            <MudNavLink Href="register" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PersonAdd">Register</MudNavLink>
+        </NotAuthorized>
+    </AuthorizeView>
+</MudNavMenu>
+
+

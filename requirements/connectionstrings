@@ -1,0 +1,1 @@
+    "DefaultConnection": "Data Source=(localdb)\\MSSqlLocalDb;Initial Catalog=wowmenfashions;User ID=appuser;Password=Sandhya@143;TrustServerCertificate=True;Encrypt=False;Connect Timeout=30;",

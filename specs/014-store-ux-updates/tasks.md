@@ -1,0 +1,22 @@
+# Tasks for Store UX Updates
+
+- [x] Task 1: Update Database Schema
+  - Create `CustomerAddresses` table.
+  - Add `AvailableColors` to `Products`.
+  - Add `SelectedColor` to `CartItems` and `OrderItems`.
+- [/] Task 2: Update Entity Models and Services
+  - Update `Product`, `CartItem`, `OrderItem` entities.
+  - Create `CustomerAddress` entity.
+  - Update `ICustomerService` / `CustomerService` and Repositories to handle addresses.
+  - Update `ICartService` / `CartRepository` to save `SelectedColor`.
+- [x] Task 3: Build Order History UI
+  - Create `Orders.razor` or add to `Profile.razor` to fetch and list `Orders` for the user.
+- [x] Task 4: Build Multiple Addresses UI
+  - Update `Profile.razor` with a section to add/manage addresses and set defaults.
+  - Update `Checkout.razor` to load the default shipping/billing address.
+- [x] Task 5: Implement Product Color Selection
+  - Update `ProductDetails.razor` to parse `AvailableColors` and display color swatches.
+  - Pass the selected color to `AddToCartAsync`.
+- [x] Task 6: Update Category UI
+  - Remove color filter dropdown in `Category.razor`.
+  - Use `<MudSpacer />` to ensure "Sort by" dropdown sits on the far right.

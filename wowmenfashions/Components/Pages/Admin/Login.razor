@@ -1,0 +1,40 @@
+@page "/admin/login"
+@inject NavigationManager Navigation
+@using Microsoft.AspNetCore.WebUtilities
+
+<PageTitle>Login - Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+    <MudPaper Class="pa-8" Elevation="4">
+        <MudText Typo="Typo.h5" Class="mb-4 text-center">Admin Login</MudText>
+        
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mb-4">@ErrorMessage</MudAlert>
+        }
+
+        <form method="post" action="/api/auth/admin-login?returnUrl=@ReturnUrl">
+            <!-- Workaround for standard form post: use plain inputs styled like MudBlazor or just MudTextField which might not emit standard 'name' attribute depending on render mode.
+                 Actually, in MudBlazor 6/7, MudTextField does not emit a standard HTML name attribute reliably for form posts unless specified, so plain inputs are safer. Let's try MudTextField first. -->
+            <div class="mb-4">
+                <label class="mud-input-label">Username</label>
+                <input type="text" name="username" class="mud-input-slot mud-input-root mud-input-root-outlined" style="width:100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" required />
+            </div>
+            <div class="mb-4">
+                <label class="mud-input-label">Password</label>
+                <input type="password" name="password" class="mud-input-slot mud-input-root mud-input-root-outlined" style="width:100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" required />
+            </div>
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Class="mt-4">Login</MudButton>
+        </form>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? ErrorMessage { get; set; }
+}

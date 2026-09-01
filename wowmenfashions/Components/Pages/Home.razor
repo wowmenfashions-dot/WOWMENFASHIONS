@@ -1,0 +1,74 @@
+@page "/"
+@inject NavigationManager NavigationManager
+
+<PageTitle>WOWMENFASHIONS - Premium Leather Wallets</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 mb-8">
+    <!-- Top Banner -->
+    <MudGrid>
+        <MudItem xs="12">
+            <MudLink Href="/category/mens-wallets">
+                <MudImage Src="/images/banners/rfid_banner.avif" Alt="RFID Protection Wallets" Style="object-fit: cover;" Class="mud-width-full rounded-lg shadow-sm" />
+            </MudLink>
+        </MudItem>
+    </MudGrid>
+
+    <MudText Typo="Typo.h5" Class="mt-8 mb-4 fw-bold text-center">Shop by Category</MudText>
+    
+    <MudGrid Spacing="4" Class="mb-8">
+        <MudItem xs="6" md="3">
+            <MudCard Elevation="2" Class="cursor-pointer hover-lift" @onclick='@(() => NavigationManager.NavigateTo("/category/bifold-wallets"))'>
+                <MudCardContent Class="text-center pa-6">
+                    <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Large" Color="Color.Primary" Class="mb-2" />
+                    <MudText Typo="Typo.h6">Bifold Wallets</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="6" md="3">
+            <MudCard Elevation="2" Class="cursor-pointer hover-lift" @onclick='@(() => NavigationManager.NavigateTo("/category/trifold-wallets"))'>
+                <MudCardContent Class="text-center pa-6">
+                    <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Size="Size.Large" Color="Color.Primary" Class="mb-2" />
+                    <MudText Typo="Typo.h6">Trifold Wallets</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="6" md="3">
+            <MudCard Elevation="2" Class="cursor-pointer hover-lift" @onclick='@(() => NavigationManager.NavigateTo("/category/card-holders"))'>
+                <MudCardContent Class="text-center pa-6">
+                    <MudIcon Icon="@Icons.Material.Filled.CreditCard" Size="Size.Large" Color="Color.Primary" Class="mb-2" />
+                    <MudText Typo="Typo.h6">Card Holders</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="6" md="3">
+            <MudCard Elevation="2" Class="cursor-pointer hover-lift" @onclick='@(() => NavigationManager.NavigateTo("/category/passport-holders"))'>
+                <MudCardContent Class="text-center pa-6">
+                    <MudIcon Icon="@Icons.Material.Filled.FlightTakeoff" Size="Size.Large" Color="Color.Primary" Class="mb-2" />
+                    <MudText Typo="Typo.h6">Passport Holders</MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Bottom Banner -->
+    <MudGrid>
+        <MudItem xs="12">
+            <MudLink Href="/category/womens-wallets">
+                <MudImage Src="/images/banners/zip_wallet_promo.avif" Alt="Womens Zip Around Wallets" Style="object-fit: cover;" Class="mud-width-full rounded-lg shadow-sm" />
+            </MudLink>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<style>
+    .hover-lift {
+        transition: transform 0.2s ease-in-out;
+    }
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    .fw-bold {
+        font-weight: bold;
+    }
+</style>

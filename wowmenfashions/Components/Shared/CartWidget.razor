@@ -1,0 +1,21 @@
+@using wowmenfashions.Services
+@inject ICartService CartService
+
+<MudBadge Content="_itemCount" Color="Color.Error" Overlap="false" Class="mx-2" Visible="@(_itemCount > 0)">
+    <MudIconButton Href="/cart" Icon="@Icons.Material.Filled.ShoppingCart" Color="Color.Inherit" />
+</MudBadge>
+
+@code {
+    private int _itemCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _itemCount = await CartService.GetCartItemCountAsync();
+    }
+
+    public async Task RefreshCartCount()
+    {
+        _itemCount = await CartService.GetCartItemCountAsync();
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,2086 @@
+# Shopping Cart Application
+
+## 5-Stage Speckit Requirements Specification
+
+**Project:** Shopping Cart / E-Commerce Application
+**Starting Point:** Empty Blazor Server application with MudBlazor
+**Development Method:** Speckit
+**Architecture:** Modular Monolith
+**Authentication:** Custom Authentication
+**UI:** Blazor Server + MudBlazor
+**Database:** Relational Database
+
+---
+
+# 1. Product Vision
+
+Build a complete shopping cart and e-commerce application using the existing empty Blazor Server application.
+
+The application shall support two types of users:
+
+### Guest User
+
+A visitor who has not authenticated.
+
+A guest can:
+
+* Browse products
+* Search products
+* Filter products
+* View product details
+* Add products to cart
+* Modify cart
+* Remove products
+* View cart totals
+
+Authentication is **not required** for shopping.
+
+Authentication becomes mandatory only when the customer wants to proceed with purchasing.
+
+### Authenticated Customer
+
+A registered customer can:
+
+* Manage their profile
+* Manage addresses
+* Maintain a shopping cart
+* Checkout
+* Place orders
+* View order history
+* View order details
+* Manage wishlist
+* Review purchased products
+
+### Administrator
+
+An administrator can:
+
+* Manage products
+* Manage categories
+* Manage inventory
+* Manage customers
+* Manage orders
+* Manage promotions
+* View dashboard information
+
+---
+
+# 2. Overall Customer Journey
+
+The primary customer journey shall be:
+
+```text
+Open Website
+     ↓
+Browse Products
+     ↓
+Search / Filter
+     ↓
+Product Details
+     ↓
+Add To Cart
+     ↓
+Continue Shopping
+     ↓
+View Cart
+     ↓
+Proceed To Checkout
+     ↓
+Authentication Check
+     ↓
+ ┌───────────────┐
+ │               │
+Authenticated   Guest
+ │               │
+ │               ↓
+ │          Login/Register
+ │               ↓
+ └───────────────┘
+         ↓
+Shipping Address
+         ↓
+Billing Address
+         ↓
+Order Review
+         ↓
+Payment
+         ↓
+Order Creation
+         ↓
+Order Confirmation
+         ↓
+Order History
+```
+
+---
+
+# 3. Five Development Stages
+
+The application shall be implemented in five stages.
+
+```text
+Stage 1
+Product Catalog
+     ↓
+Stage 2
+Shopping Cart + Guest Cart
+     ↓
+Stage 3
+Custom Authentication + Customer Account
+     ↓
+Stage 4
+Checkout + Orders + Administration
+     ↓
+Stage 5
+Payment + Advanced E-Commerce + Production Readiness
+```
+
+Each stage must:
+
+* Compile successfully
+* Run independently
+* Preserve functionality from previous stages
+* Include appropriate tests
+* Avoid unnecessary future-stage implementation
+* Follow the architecture established in the project
+
+---
+
+# STAGE 1 — PRODUCT CATALOG
+
+## 1. Stage Objective
+
+Create the product catalog and category functionality.
+
+A visitor should be able to use the application without logging in.
+
+At the end of this stage, the application shall function as a basic product browsing website.
+
+---
+
+# 1.1 Product Entity
+
+The system shall maintain product information.
+
+Required fields:
+
+```text
+Product
+--------------------
+Id
+Name
+Description
+SKU
+Price
+DiscountPrice
+CategoryId
+ImageUrl
+StockQuantity
+IsActive
+CreatedAt
+UpdatedAt
+```
+
+Requirements:
+
+* Product ID must be unique.
+* SKU must be unique.
+* Product name is required.
+* Price must be greater than or equal to zero.
+* Stock quantity cannot be negative.
+* Inactive products must not be displayed to customers.
+* Created and updated timestamps must be maintained.
+
+---
+
+# 1.2 Category Entity
+
+The system shall support product categories.
+
+```text
+Category
+--------------------
+Id
+Name
+Description
+ParentCategoryId
+IsActive
+CreatedAt
+UpdatedAt
+```
+
+The design should support parent/child categories even if the initial UI only uses a single category level.
+
+Example:
+
+```text
+Electronics
+    ├── Computers
+    ├── Mobile Phones
+    └── Accessories
+
+Clothing
+    ├── Men
+    ├── Women
+    └── Kids
+```
+
+---
+
+# 1.3 Product Listing
+
+Create a product listing page.
+
+Example route:
+
+```text
+/products
+```
+
+The page shall display:
+
+* Product image
+* Product name
+* Price
+* Discount price
+* Category
+* Stock availability
+* Add to Cart button
+
+Products shall be displayed using MudBlazor components.
+
+---
+
+# 1.4 Product Search
+
+Customers shall be able to search products.
+
+Search shall support:
+
+* Product name
+* SKU
+* Description
+
+Search must be case-insensitive.
+
+---
+
+# 1.5 Product Filtering
+
+Customers shall be able to filter products by:
+
+* Category
+* Price range
+* Availability
+
+---
+
+# 1.6 Product Sorting
+
+The application should support:
+
+* Price low to high
+* Price high to low
+* Name A-Z
+* Name Z-A
+* Newest
+
+---
+
+# 1.7 Pagination
+
+Product listing must use pagination.
+
+The application must not load the complete product catalog into memory.
+
+Example:
+
+```text
+Page 1  2  3  4  5  Next
+```
+
+---
+
+# 1.8 Product Details
+
+Create:
+
+```text
+/products/{id}
+```
+
+The product details page shall display:
+
+* Product image
+* Product name
+* Description
+* SKU
+* Price
+* Discount price
+* Availability
+* Stock information
+* Quantity selector
+* Add to Cart button
+
+---
+
+# 1.9 Stage 1 Acceptance Criteria
+
+Stage 1 is complete when:
+
+* Application starts successfully.
+* Products can be stored in the database.
+* Categories can be stored in the database.
+* Customers can browse products without authentication.
+* Customers can search products.
+* Customers can filter products.
+* Customers can sort products.
+* Product listing supports pagination.
+* Customers can view product details.
+* Inactive products are not shown.
+* MudBlazor UI is used.
+* Product functionality has appropriate tests.
+
+---
+
+# STAGE 2 — SHOPPING CART AND GUEST CART
+
+## 2. Stage Objective
+
+Implement shopping cart functionality.
+
+Customers must be able to shop without creating an account.
+
+---
+
+# 2.1 Guest Shopping
+
+Authentication must NOT be required for:
+
+* Browsing
+* Searching
+* Filtering
+* Viewing product details
+* Adding products to cart
+* Viewing cart
+* Updating cart
+
+---
+
+# 2.2 Cart Entity
+
+The system shall support carts.
+
+```text
+Cart
+--------------------
+Id
+CustomerId
+GuestCartId
+CreatedAt
+UpdatedAt
+```
+
+A cart can belong to:
+
+* An authenticated customer
+* A guest visitor
+
+Only one active cart should exist for a customer.
+
+---
+
+# 2.3 Cart Item
+
+```text
+CartItem
+--------------------
+Id
+CartId
+ProductId
+Quantity
+UnitPrice
+CreatedAt
+UpdatedAt
+```
+
+---
+
+# 2.4 Add To Cart
+
+When a customer adds a product:
+
+1. Verify product exists.
+2. Verify product is active.
+3. Verify quantity is valid.
+4. Verify available inventory.
+5. Check whether product already exists in cart.
+6. Increase existing quantity or create a new cart item.
+
+---
+
+# 2.5 Guest Cart Identification
+
+Guest carts shall be identified using a secure browser-side identifier such as a cookie.
+
+Example:
+
+```text
+Browser
+   ↓
+GuestCartId
+   ↓
+Cart
+   ↓
+CartItems
+```
+
+The application must not rely on the browser to provide the product price.
+
+---
+
+# 2.6 Cart Page
+
+Create:
+
+```text
+/cart
+```
+
+Display:
+
+* Product image
+* Product name
+* Unit price
+* Quantity
+* Item total
+* Cart subtotal
+* Remove action
+* Continue shopping
+* Proceed to checkout
+
+---
+
+# 2.7 Cart Quantity
+
+Customers shall be able to:
+
+* Increase quantity
+* Decrease quantity
+* Enter quantity
+* Remove item
+
+Quantity must always be validated against inventory.
+
+---
+
+# 2.8 Cart Calculation
+
+The server shall calculate:
+
+```text
+ItemTotal = UnitPrice × Quantity
+
+Subtotal = Sum(ItemTotal)
+```
+
+Client-side totals shall never be considered authoritative.
+
+---
+
+# 2.9 Cart Price Validation
+
+When displaying or modifying a cart, the server shall verify current product pricing.
+
+The application must handle situations where:
+
+* Product price changed
+* Product became inactive
+* Product is no longer available
+* Inventory decreased
+
+---
+
+# 2.10 Cart Indicator
+
+The main navigation shall display the cart count.
+
+Example:
+
+```text
+Shopping Cart (3)
+```
+
+---
+
+# 2.11 Guest Cart Persistence
+
+A guest cart should survive:
+
+* Page navigation
+* Browser refresh
+* Moving between product pages
+
+The guest cart should have a configurable expiration period.
+
+---
+
+# 2.12 Guest Cart → Customer Cart
+
+When a guest reaches checkout and authenticates:
+
+```text
+Guest Cart
+    ↓
+Login/Register
+    ↓
+Customer Account
+    ↓
+Merge Guest Cart
+    ↓
+Customer Cart
+```
+
+If an authenticated customer already has a cart, the application shall use a deterministic merge strategy.
+
+Example:
+
+```text
+Guest:
+Laptop × 1
+
+Existing Customer Cart:
+Laptop × 2
+
+Result:
+Laptop × 3
+```
+
+The final quantity must still respect inventory limits.
+
+---
+
+# 2.13 Checkout Authentication Requirement
+
+When an unauthenticated user clicks:
+
+```text
+Proceed to Checkout
+```
+
+the system shall redirect the user to:
+
+```text
+Login / Register
+```
+
+The user cannot place an order without authentication.
+
+---
+
+# 2.14 Stage 2 Acceptance Criteria
+
+Stage 2 is complete when:
+
+* Guest users can add products to cart.
+* Guest users can modify cart.
+* Guest users can remove products.
+* Guest users can view cart.
+* Guest cart survives browser refresh.
+* Cart totals are calculated server-side.
+* Inventory is validated.
+* Price changes are detected.
+* Cart count appears in navigation.
+* Checkout requires authentication.
+* Guest cart can be merged into authenticated customer's cart.
+* Existing Stage 1 functionality continues to work.
+
+---
+
+# STAGE 3 — CUSTOM AUTHENTICATION AND CUSTOMER ACCOUNT
+
+## 3. Stage Objective
+
+Implement custom customer authentication and account management.
+
+The application shall NOT use ASP.NET Core Identity.
+
+The application shall implement a dedicated authentication module.
+
+---
+
+# 3.1 Registration
+
+Create:
+
+```text
+/register
+```
+
+Registration fields:
+
+```text
+First Name
+Last Name
+Email
+Phone Number
+Password
+Confirm Password
+```
+
+Requirements:
+
+* Email must be unique.
+* Email must have valid format.
+* Password must meet configurable security requirements.
+* Password confirmation must match.
+* Required fields must be validated.
+* Password must never be stored as plain text.
+
+---
+
+# 3.2 Customer Entity
+
+```text
+Customer
+--------------------
+Id
+FirstName
+LastName
+Email
+Phone
+PasswordHash
+IsEmailVerified
+IsActive
+CreatedAt
+UpdatedAt
+LastLoginAt
+```
+
+---
+
+# 3.3 Password Storage
+
+Passwords must be stored using a secure password hashing mechanism.
+
+The application must never store:
+
+```text
+Password
+PlainTextPassword
+```
+
+---
+
+# 3.4 Login
+
+Create:
+
+```text
+/login
+```
+
+User enters:
+
+```text
+Email
+Password
+```
+
+The system shall:
+
+1. Find the customer.
+2. Verify account status.
+3. Verify password.
+4. Create authenticated session.
+5. Record last login time.
+
+---
+
+# 3.5 Logout
+
+Create logout functionality.
+
+Logout shall invalidate the current authenticated session.
+
+---
+
+# 3.6 Authentication Session
+
+Authentication shall use secure server-side authentication/session mechanisms.
+
+Requirements include:
+
+* Secure cookies
+* HttpOnly
+* Secure flag where applicable
+* Configurable expiration
+* Session invalidation
+* Logout support
+
+Authentication implementation must be isolated behind an authentication service.
+
+---
+
+# 3.7 Authorization
+
+The application shall distinguish:
+
+```text
+Guest
+Customer
+Administrator
+```
+
+Customer-only functionality shall require authentication.
+
+Admin functionality shall require administrator authorization.
+
+---
+
+# 3.8 Forgot Password
+
+Create:
+
+```text
+/forgot-password
+```
+
+Flow:
+
+```text
+Email
+ ↓
+Verification
+ ↓
+Password Reset
+ ↓
+New Password
+```
+
+Password reset tokens must:
+
+* Expire
+* Be single-use
+* Be securely generated
+* Not expose sensitive information
+
+---
+
+# 3.9 Email Verification
+
+The application should support email verification.
+
+Registration flow:
+
+```text
+Register
+   ↓
+Verification Email
+   ↓
+Verify Email
+   ↓
+Account Activated
+```
+
+---
+
+# 3.10 Customer Profile
+
+Create:
+
+```text
+/account/profile
+```
+
+Customer can update:
+
+* First name
+* Last name
+* Phone
+* Email according to verification rules
+
+---
+
+# 3.11 Address Management
+
+Create:
+
+```text
+/account/addresses
+```
+
+Customer can:
+
+* Add address
+* Edit address
+* Delete address
+* Set default address
+
+Address:
+
+```text
+Address
+--------------------
+Id
+CustomerId
+AddressType
+AddressLine1
+AddressLine2
+City
+State
+PostalCode
+Country
+IsDefault
+CreatedAt
+UpdatedAt
+```
+
+---
+
+# 3.12 Customer Navigation
+
+Authenticated users shall see:
+
+```text
+My Account
+    ├── Profile
+    ├── Addresses
+    ├── Orders
+    ├── Wishlist
+    └── Logout
+```
+
+Guests shall see:
+
+```text
+Login
+Register
+```
+
+---
+
+# 3.13 Guest Cart After Login
+
+After login or registration:
+
+```text
+Guest Cart
+     ↓
+Authenticated Customer
+     ↓
+Cart Migration/Merge
+```
+
+The customer must not lose products that were added before authentication.
+
+---
+
+# 3.14 Stage 3 Acceptance Criteria
+
+Stage 3 is complete when:
+
+* Customer can register.
+* Customer can login.
+* Customer can logout.
+* Customer password is securely hashed.
+* Authentication session works.
+* Customer can reset password.
+* Email verification can be supported.
+* Customer can view and update profile.
+* Customer can manage addresses.
+* Customer-only pages are protected.
+* Admin role is distinguishable from customer.
+* Guest cart is preserved during authentication.
+* Existing catalog and cart functionality continues to work.
+
+---
+
+# STAGE 4 — CHECKOUT, ORDERS AND ADMINISTRATION
+
+## 4. Stage Objective
+
+Implement the complete purchase workflow and administrative functionality.
+
+---
+
+# 4.1 Checkout
+
+Create:
+
+```text
+/checkout
+```
+
+Checkout is available only to authenticated customers.
+
+---
+
+# 4.2 Checkout Flow
+
+```text
+Cart
+ ↓
+Authentication
+ ↓
+Shipping Address
+ ↓
+Billing Address
+ ↓
+Order Review
+ ↓
+Payment Preparation
+ ↓
+Place Order
+ ↓
+Order Confirmation
+```
+
+---
+
+# 4.3 Shipping Address
+
+Customer can:
+
+* Select saved address
+* Add new address
+* Use default address
+
+---
+
+# 4.4 Billing Address
+
+Customer can:
+
+* Use shipping address
+* Select another saved address
+* Add a new billing address
+
+---
+
+# 4.5 Order Review
+
+Display:
+
+```text
+Products
+Quantities
+Unit Prices
+Subtotal
+Discount
+Shipping
+Tax
+Grand Total
+Shipping Address
+Billing Address
+```
+
+---
+
+# 4.6 Order Entity
+
+```text
+Order
+--------------------
+Id
+OrderNumber
+CustomerId
+OrderDate
+Status
+Subtotal
+Discount
+Shipping
+Tax
+Total
+ShippingAddress
+BillingAddress
+CreatedAt
+UpdatedAt
+```
+
+---
+
+# 4.7 Order Item
+
+```text
+OrderItem
+--------------------
+Id
+OrderId
+ProductId
+ProductName
+SKU
+UnitPrice
+Quantity
+Total
+```
+
+Order items must preserve the product information and price at the time of purchase.
+
+Future product changes must not alter historical orders.
+
+---
+
+# 4.8 Order Number
+
+Every order must have a unique human-readable order number.
+
+Example:
+
+```text
+ORD-20260830-000001
+```
+
+---
+
+# 4.9 Order Creation
+
+Order creation must be transactional.
+
+The transaction shall:
+
+```text
+Validate Customer
+      ↓
+Validate Cart
+      ↓
+Validate Products
+      ↓
+Validate Inventory
+      ↓
+Validate Prices
+      ↓
+Calculate Totals
+      ↓
+Create Order
+      ↓
+Create Order Items
+      ↓
+Update Inventory
+      ↓
+Clear Cart
+```
+
+If a critical operation fails, the transaction must not leave the system in an inconsistent state.
+
+---
+
+# 4.10 Order Status
+
+Initial statuses:
+
+```text
+Pending
+Confirmed
+Processing
+Shipped
+Delivered
+Cancelled
+```
+
+---
+
+# 4.11 Customer Order History
+
+Create:
+
+```text
+/account/orders
+```
+
+Display:
+
+* Order number
+* Order date
+* Total
+* Status
+
+---
+
+# 4.12 Order Details
+
+Create:
+
+```text
+/account/orders/{id}
+```
+
+Display:
+
+* Order number
+* Date
+* Products
+* Quantities
+* Prices
+* Totals
+* Shipping address
+* Billing address
+* Status
+
+Customers may only access their own orders.
+
+---
+
+# 4.13 Administration
+
+Create:
+
+```text
+/admin
+```
+
+Administrator dashboard shall show:
+
+```text
+Total Products
+Total Customers
+Total Orders
+Pending Orders
+Revenue
+Inventory Alerts
+```
+
+---
+
+# 4.14 Admin Product Management
+
+Administrator can:
+
+* Create products
+* Edit products
+* Activate/deactivate products
+* Change prices
+* Update inventory
+* Manage product images
+
+---
+
+# 4.15 Admin Category Management
+
+Administrator can:
+
+* Create category
+* Edit category
+* Activate/deactivate category
+* Manage parent/child categories
+
+---
+
+# 4.16 Admin Customer Management
+
+Administrator can:
+
+* Search customers
+* View customer
+* Activate/deactivate account
+* View customer orders
+
+Administrators must not be able to view customer passwords.
+
+---
+
+# 4.17 Admin Order Management
+
+Administrator can:
+
+* Search orders
+* Filter orders
+* View order
+* Change order status
+
+---
+
+# 4.18 Inventory Management
+
+Inventory shall support:
+
+```text
+Available Stock
+Reserved Stock
+Sold Quantity
+```
+
+The initial implementation may use:
+
+```text
+StockQuantity
+```
+
+but the architecture should allow inventory reservation later.
+
+---
+
+# 4.19 Stage 4 Acceptance Criteria
+
+Stage 4 is complete when:
+
+* Authenticated customers can checkout.
+* Customers can select shipping addresses.
+* Customers can select billing addresses.
+* Server calculates final order totals.
+* Orders are created transactionally.
+* Inventory is validated.
+* Order history works.
+* Order details work.
+* Customers cannot access other customers' orders.
+* Admin dashboard works.
+* Admin can manage products.
+* Admin can manage categories.
+* Admin can manage customers.
+* Admin can manage orders.
+* Admin can update order status.
+
+---
+
+# STAGE 5 — PAYMENT AND PRODUCTION-READY E-COMMERCE
+
+## 5. Stage Objective
+
+Add payment processing and advanced e-commerce capabilities while making the application production-ready.
+
+---
+
+# 5.1 Payment Abstraction
+
+Payment functionality must be abstracted.
+
+Create:
+
+```text
+IPaymentService
+```
+
+Example operations:
+
+```text
+CreatePayment
+ConfirmPayment
+CancelPayment
+RefundPayment
+GetPaymentStatus
+```
+
+The application must not tightly couple business logic to a specific payment provider.
+
+Possible future providers:
+
+```text
+Stripe
+Razorpay
+PayPal
+Other Providers
+```
+
+---
+
+# 5.2 Payment Entity
+
+```text
+Payment
+--------------------
+Id
+OrderId
+Provider
+TransactionId
+Amount
+Currency
+Status
+CreatedAt
+UpdatedAt
+```
+
+Payment statuses:
+
+```text
+Pending
+Authorized
+Paid
+Failed
+Cancelled
+Refunded
+PartiallyRefunded
+```
+
+---
+
+# 5.3 Payment Flow
+
+```text
+Checkout
+   ↓
+Create Payment
+   ↓
+Payment Provider
+   ↓
+Customer Payment
+   ↓
+Payment Confirmation
+   ↓
+Order Confirmation
+```
+
+Payment confirmation must be verified server-side.
+
+The browser must not be trusted to report successful payment.
+
+---
+
+# 5.4 Payment Failure
+
+If payment fails:
+
+```text
+Payment Failed
+      ↓
+Order remains unpaid
+      ↓
+Customer can retry
+```
+
+The system must not incorrectly mark an order as paid.
+
+---
+
+# 5.5 Product Images
+
+Support multiple product images.
+
+```text
+ProductImage
+--------------------
+Id
+ProductId
+ImageUrl
+DisplayOrder
+IsPrimary
+CreatedAt
+```
+
+Images should be stored outside the relational database when appropriate.
+
+---
+
+# 5.6 Wishlist
+
+Customers can add products to a wishlist.
+
+```text
+WishlistItem
+--------------------
+Id
+CustomerId
+ProductId
+CreatedAt
+```
+
+Customer can:
+
+* Add product
+* Remove product
+* View wishlist
+* Move wishlist product to cart
+
+---
+
+# 5.7 Product Reviews
+
+Customers can review products they purchased.
+
+```text
+Review
+--------------------
+Id
+ProductId
+CustomerId
+OrderId
+Rating
+Comment
+CreatedAt
+UpdatedAt
+```
+
+Rating:
+
+```text
+1–5
+```
+
+Only verified purchasers should be allowed to review a product.
+
+---
+
+# 5.8 Promotions and Coupons
+
+Create:
+
+```text
+Coupon
+--------------------
+Id
+Code
+DiscountType
+DiscountValue
+MinimumOrderValue
+MaximumDiscount
+StartDate
+EndDate
+UsageLimit
+IsActive
+```
+
+Support:
+
+```text
+Percentage Discount
+Fixed Amount Discount
+Expiration
+Minimum Order
+Maximum Discount
+Usage Limits
+```
+
+---
+
+# 5.9 Notifications
+
+Create notification abstraction:
+
+```text
+INotificationService
+```
+
+The application should support future:
+
+* Email
+* SMS
+* Push notifications
+
+Events include:
+
+```text
+Account Created
+Email Verified
+Order Created
+Payment Successful
+Payment Failed
+Order Shipped
+Order Delivered
+Order Cancelled
+```
+
+---
+
+# 5.10 Logging
+
+Implement structured application logging.
+
+Log important events such as:
+
+* Authentication failures
+* Customer registration
+* Order creation
+* Payment status changes
+* Inventory changes
+* Administrative actions
+
+Sensitive information must never be logged.
+
+Never log:
+
+```text
+Password
+PasswordHash
+Payment credentials
+Authentication tokens
+```
+
+---
+
+# 5.11 Error Handling
+
+Implement centralized error handling.
+
+The application shall:
+
+* Display user-friendly error messages.
+* Log technical details.
+* Avoid exposing stack traces.
+* Handle database failures.
+* Handle payment failures.
+* Handle external service failures.
+
+---
+
+# 5.12 Health Checks
+
+Create health endpoints for:
+
+```text
+Application
+Database
+External Dependencies
+```
+
+Example:
+
+```text
+/health
+```
+
+---
+
+# 5.13 Performance
+
+The application shall support:
+
+* Database indexes
+* Pagination
+* Efficient queries
+* Async database operations
+* Caching where appropriate
+* Optimized product images
+* Server-side filtering
+* Server-side sorting
+
+Product catalog queries must not retrieve unnecessary records.
+
+---
+
+# 5.14 Security
+
+The application shall implement:
+
+* Secure authentication
+* Secure password hashing
+* Secure cookies
+* Authorization
+* Input validation
+* CSRF protection where applicable
+* Rate limiting for authentication endpoints
+* Account protection
+* Secure payment processing
+* Server-side price validation
+* Server-side inventory validation
+* Resource ownership validation
+
+The application must never trust client-supplied:
+
+```text
+CustomerId
+ProductPrice
+Discount
+Tax
+Total
+OrderTotal
+Inventory
+PaymentStatus
+```
+
+---
+
+# 5.15 Audit Logging
+
+Administrative actions should be auditable.
+
+Example:
+
+```text
+AuditLog
+--------------------
+Id
+UserId
+Action
+EntityType
+EntityId
+Timestamp
+Details
+```
+
+Examples:
+
+```text
+Admin changed product price
+Admin changed inventory
+Admin cancelled order
+Admin changed order status
+```
+
+---
+
+# 5.16 Stage 5 Acceptance Criteria
+
+Stage 5 is complete when:
+
+* Payment abstraction exists.
+* Payment provider can be integrated.
+* Payment status is tracked.
+* Failed payments are handled.
+* Successful payments are verified server-side.
+* Product images are supported.
+* Wishlist works.
+* Product reviews work.
+* Coupons work.
+* Notification abstraction exists.
+* Structured logging exists.
+* Health checks exist.
+* Security requirements are implemented.
+* Performance requirements are addressed.
+* Audit logging exists.
+* The application is ready for production deployment.
+
+---
+
+# 6. Overall Data Model
+
+The initial overall data model should evolve toward:
+
+```text
+Customer
+   │
+   ├────────────── Address
+   │
+   ├────────────── Cart
+   │                  │
+   │                  └──── CartItem ─── Product
+   │
+   ├────────────── Order
+   │                  │
+   │                  ├──── OrderItem
+   │                  │
+   │                  └──── Payment
+   │
+   ├────────────── Wishlist
+   │
+   └────────────── Review
+
+Category
+   │
+   └────────────── Product
+                       │
+                       └──── ProductImage
+
+Coupon
+```
+
+---
+
+# 7. Application Architecture
+
+The application should use a modular architecture.
+
+```text
+ShoppingCart
+│
+├── Features
+│   │
+│   ├── Catalog
+│   │   ├── Products
+│   │   └── Categories
+│   │
+│   ├── Cart
+│   │
+│   ├── Authentication
+│   │
+│   ├── Customer
+│   │
+│   ├── Checkout
+│   │
+│   ├── Orders
+│   │
+│   ├── Payments
+│   │
+│   ├── Wishlist
+│   │
+│   ├── Reviews
+│   │
+│   ├── Promotions
+│   │
+│   └── Administration
+│
+├── Infrastructure
+│
+├── Data
+│
+├── Services
+│
+└── Shared
+```
+
+Business logic should not be implemented directly inside Razor components.
+
+Recommended flow:
+
+```text
+Blazor Component
+       ↓
+Application Service
+       ↓
+Domain/Business Logic
+       ↓
+Repository/Data Access
+       ↓
+Database
+```
+
+---
+
+# 8. Service Contracts
+
+The architecture should use interfaces for important business services.
+
+Examples:
+
+```text
+IProductService
+ICategoryService
+ICartService
+IAuthenticationService
+ICustomerService
+IAddressService
+ICheckoutService
+IOrderService
+IInventoryService
+IPaymentService
+IWishlistService
+IReviewService
+ICouponService
+INotificationService
+```
+
+Services should contain business rules.
+
+Blazor components should primarily be responsible for:
+
+* Display
+* User interaction
+* Form input
+* Calling application services
+* Displaying results/errors
+
+---
+
+# 9. Authentication Boundary
+
+Authentication must be treated as a separate module.
+
+```text
+                   Authentication
+                         │
+          ┌──────────────┼──────────────┐
+          │              │              │
+       Register         Login         Logout
+          │              │              │
+          └──────────────┼──────────────┘
+                         │
+                  Authentication
+                      Session
+                         │
+          ┌──────────────┴──────────────┐
+          │                             │
+       Customer                       Admin
+```
+
+The rest of the application should depend on an abstraction rather than directly implementing authentication logic.
+
+---
+
+# 10. Guest vs Customer Access Rules
+
+| Feature              | Guest |   Customer | Admin |
+| -------------------- | ----: | ---------: | ----: |
+| Browse Products      |   Yes |        Yes |   Yes |
+| Search               |   Yes |        Yes |   Yes |
+| Product Details      |   Yes |        Yes |   Yes |
+| Add to Cart          |   Yes |        Yes |   Yes |
+| View Cart            |   Yes |        Yes |   Yes |
+| Checkout             |    No |        Yes |   Yes |
+| Register             |   Yes |         No |    No |
+| Login                |   Yes |        Yes |   Yes |
+| Profile              |    No |        Yes |   Yes |
+| Addresses            |    No |        Yes |   Yes |
+| Orders               |    No | Own Orders |   All |
+| Wishlist             |    No |        Yes |   Yes |
+| Reviews              |    No |        Yes |   Yes |
+| Product Management   |    No |         No |   Yes |
+| Category Management  |    No |         No |   Yes |
+| Customer Management  |    No |         No |   Yes |
+| Order Management     |    No |         No |   Yes |
+| Inventory Management |    No |         No |   Yes |
+
+---
+
+# 11. Testing Requirements
+
+Every stage shall include appropriate automated tests.
+
+## Unit Tests
+
+Business rules must be unit tested.
+
+Examples:
+
+```text
+Cart total calculation
+Quantity validation
+Inventory validation
+Discount calculation
+Coupon validation
+Order total calculation
+Authentication rules
+```
+
+## Integration Tests
+
+Test important database workflows.
+
+Examples:
+
+```text
+Create Product
+Add Product To Cart
+Update Cart
+Register Customer
+Login Customer
+Merge Guest Cart
+Create Order
+Update Inventory
+Create Payment
+```
+
+## End-to-End Tests
+
+Critical workflows should be tested.
+
+### Guest Shopping
+
+```text
+Browse
+ ↓
+Product
+ ↓
+Add Cart
+ ↓
+Cart
+```
+
+### Purchase
+
+```text
+Browse
+ ↓
+Add Cart
+ ↓
+Checkout
+ ↓
+Login/Register
+ ↓
+Address
+ ↓
+Review
+ ↓
+Payment
+ ↓
+Order
+```
+
+---
+
+# 12. Speckit Development Rules
+
+Each stage must be developed independently using Speckit.
+
+For each stage:
+
+```text
+/specify
+      ↓
+/clarify
+      ↓
+/plan
+      ↓
+/tasks
+      ↓
+Implementation
+      ↓
+Testing
+      ↓
+Validation
+```
+
+Do not implement all five stages simultaneously.
+
+---
+
+# 13. Stage Dependencies
+
+```text
+STAGE 1
+Product Catalog
+     │
+     ▼
+STAGE 2
+Cart
+     │
+     ▼
+STAGE 3
+Authentication
+     │
+     ▼
+STAGE 4
+Checkout + Orders + Admin
+     │
+     ▼
+STAGE 5
+Payments + Advanced Features
+```
+
+Stage 2 may reference Stage 1.
+
+Stage 3 may reference Stages 1 and 2.
+
+Stage 4 may reference Stages 1–3.
+
+Stage 5 may reference Stages 1–4.
+
+---
+
+# 14. Definition of Done
+
+A feature is considered complete only when:
+
+1. Requirements are implemented.
+2. UI is implemented using MudBlazor.
+3. Business logic is implemented in the appropriate service/domain layer.
+4. Database changes are implemented.
+5. Validation exists.
+6. Error handling exists.
+7. Authorization is implemented where required.
+8. Unit tests exist for important business rules.
+9. Integration tests exist for important workflows.
+10. Existing functionality continues to work.
+11. Application compiles without errors.
+12. No critical warnings/errors remain.
+13. Database migrations are included.
+14. The feature can be demonstrated manually.
+
+---
+
+# 15. Important Design Constraints
+
+The implementation must follow these constraints.
+
+### Authentication
+
+Custom authentication shall be used.
+
+Do not use ASP.NET Core Identity.
+
+### UI
+
+Use MudBlazor components.
+
+Do not introduce another UI framework.
+
+### Guest Shopping
+
+Do not require authentication for normal shopping.
+
+Authentication is mandatory only when purchasing.
+
+### Security
+
+Never trust prices, totals, inventory or customer identity supplied by the browser.
+
+### Business Logic
+
+Do not place business rules directly inside Razor components.
+
+### Database
+
+Do not load entire tables when pagination/filtering can be performed by the database.
+
+### Architecture
+
+Avoid creating unnecessary microservices.
+
+The initial application should remain a modular monolith.
+
+### Extensibility
+
+Payment, notification, inventory and other external integrations should use interfaces/abstractions.
+
+---
+
+# 16. Final Success Criteria
+
+The complete application is successful when a new visitor can:
+
+```text
+Open Website
+     ↓
+Browse Products
+     ↓
+Search Products
+     ↓
+View Product
+     ↓
+Add Product To Cart
+     ↓
+Modify Cart
+     ↓
+Proceed To Checkout
+     ↓
+Register/Login
+     ↓
+Enter/Select Address
+     ↓
+Review Order
+     ↓
+Pay
+     ↓
+Receive Order Confirmation
+     ↓
+View Order History
+```
+
+An administrator can:
+
+```text
+Login
+  ↓
+Dashboard
+  ↓
+Manage Products
+  ↓
+Manage Categories
+  ↓
+Manage Inventory
+  ↓
+Manage Customers
+  ↓
+Manage Orders
+  ↓
+Manage Promotions
+  ↓
+Monitor Application
+```
+
+The final system shall provide a clean foundation for future capabilities such as:
+
+* Product variants
+* Multiple warehouses
+* Shipping provider integration
+* Tax engine
+* Multiple currencies
+* Recommendation engine
+* AI shopping assistant
+* Semantic product search
+* Mobile application
+* Public APIs
+* Event-driven processing
+* Customer loyalty
+* Subscription products
+* Analytics
+
+use this connectionstring to connect to the sql database.
+    "DefaultConnection": "Data Source=(localdb)\\MSSqlLocalDb;Initial Catalog=wowmenfashions;User ID=appuser;Password=Sandhya@143;TrustServerCertificate=True;Encrypt=False;Connect Timeout=30;",

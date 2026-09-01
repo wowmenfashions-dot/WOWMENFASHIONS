@@ -1,0 +1,18 @@
+CREATE TABLE [dbo].[Customers] (
+    [Id] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+    [FirstName] NVARCHAR(100) NOT NULL,
+    [LastName] NVARCHAR(100) NOT NULL,
+    [Email] NVARCHAR(256) NOT NULL,
+    [Phone] NVARCHAR(20) NULL,
+    [PasswordHash] NVARCHAR(MAX) NOT NULL,
+    [IsEmailVerified] BIT NOT NULL DEFAULT 0,
+    [IsActive] BIT NOT NULL DEFAULT 1,
+    [CreatedAt] DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    [UpdatedAt] DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+    [LastLoginAt] DATETIME2 NULL
+);
+GO
+
+CREATE UNIQUE NONCLUSTERED INDEX [IX_Customers_Email] 
+ON [dbo].[Customers] ([Email]);
+GO
