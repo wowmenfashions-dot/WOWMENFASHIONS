@@ -1,0 +1,167 @@
+@page "/admin/products/new"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+@using wowmenfashions.Models
+@using wowmenfashions.Services
+@inject IProductService ProductService
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create Product | Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="my-8">
+    <MudText Typo="Typo.h4" Class="mb-6">Create New Product</MudText>
+
+    <MudPaper Class="pa-6">
+        <EditForm Model="@_product" OnValidSubmit="HandleSubmitAsync">
+            <DataAnnotationsValidator />
+            
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudTextField @bind-Value="_product.Name" Label="Product Name" Required="true" Variant="Variant.Outlined" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSelect T="int" Value="_selectedCategoryId" ValueChanged="OnCategoryChanged" Label="Category" Required="true" Variant="Variant.Outlined">
+                        @foreach (var cat in _categories.Where(c => c.ParentId == null))
+                        {
+                            <MudSelectItem Value="@cat.Id">@cat.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSelect T="int" Value="_selectedSubCategoryId" ValueChanged="OnSubCategoryChanged" Label="Sub Category" Required="false" Variant="Variant.Outlined" Disabled="@(!_subCategories.Any())">
+                        @foreach (var sub in _subCategories)
+                        {
+                            <MudSelectItem Value="@sub.Id">@sub.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudNumericField @bind-Value="_product.Price" Label="Price" Required="true" Min="0" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentText="₹" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudNumericField @bind-Value="_product.OriginalPrice" Label="Original Price (optional)" Min="0" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentText="₹" />
+                </MudItem>
+                
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_product.Description" Label="Description" Lines="4" Variant="Variant.Outlined" />
+                </MudItem>
+                
+                <MudItem xs="12" Class="mt-6">
+                    <MudText Typo="Typo.h6" Class="mb-2">Color Variants</MudText>
+                    <MudDivider Class="mb-4" />
+                    
+                    @foreach (var cv in _colorVariants)
+                    {
+                        <MudGrid Class="align-center mb-2">
+                            <MudItem xs="4">
+                                <MudTextField @bind-Value="cv.ColorName" Label="Color Name (e.g. Red)" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudTextField @bind-Value="cv.ImageUrl" Label="Image URL" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </MudItem>
+                            <MudItem xs="2">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => _colorVariants.Remove(cv))" />
+                            </MudItem>
+                        </MudGrid>
+                    }
+                    
+                    <MudButton StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Text" Color="Color.Primary" OnClick="AddColorVariant">Add Color</MudButton>
+                </MudItem>
+
+                <MudItem xs="12" Class="d-flex justify-end mt-4">
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large">Create Product</MudButton>
+                </MudItem>
+            </MudGrid>
+        </EditForm>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private ProductDto _product = new ProductDto();
+    private List<ColorVariantInput> _colorVariants = new List<ColorVariantInput>();
+    private List<CategoryDto> _categories = new();
+    private List<CategoryDto> _subCategories = new();
+    private int _selectedCategoryId;
+    private int _selectedSubCategoryId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _categories = (await ProductService.GetCategoriesHierarchyAsync()).ToList();
+    }
+
+    private void OnCategoryChanged(int categoryId)
+    {
+        _selectedCategoryId = categoryId;
+        _subCategories = _categories.Where(c => c.ParentId == categoryId).ToList();
+        _selectedSubCategoryId = 0; // Reset
+    }
+
+    private void OnSubCategoryChanged(int subCategoryId)
+    {
+        _selectedSubCategoryId = subCategoryId;
+    }
+
+    private void AddColorVariant()
+    {
+        _colorVariants.Add(new ColorVariantInput());
+    }
+
+    private async Task HandleSubmitAsync()
+    {
+        try
+        {
+            var finalCatId = _selectedSubCategoryId > 0 ? _selectedSubCategoryId : _selectedCategoryId;
+            var finalCat = _categories.FirstOrDefault(c => c.Id == finalCatId);
+            if (finalCat == null)
+            {
+                Snackbar.Add("Please select a category.", Severity.Warning);
+                return;
+            }
+
+            _product.CategoryId = finalCat.Id;
+            _product.Category = finalCat.Slug;
+
+            // Populate ColorImages dictionary from our UI list
+            _product.ColorImages = new Dictionary<string, string>();
+            foreach (var cv in _colorVariants)
+            {
+                if (!string.IsNullOrWhiteSpace(cv.ColorName) && !string.IsNullOrWhiteSpace(cv.ImageUrl))
+                {
+                    _product.ColorImages[cv.ColorName] = cv.ImageUrl;
+                }
+            }
+
+            // Set default image to the first color's image if available
+            if (_product.ColorImages.Any())
+            {
+                _product.ImageUrl = _product.ColorImages.Values.First();
+                _product.Color = _product.ColorImages.Keys.First();
+            }
+            else
+            {
+                _product.ImageUrl = "/images/dummy-product.avif";
+            }
+
+            await ProductService.CreateProductAsync(_product);
+            Snackbar.Add($"Product '{_product.Name}' created successfully!", Severity.Success);
+            
+            // Reset form
+            _product = new ProductDto();
+            _colorVariants.Clear();
+            _selectedCategoryId = 0;
+            _selectedSubCategoryId = 0;
+            _subCategories.Clear();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error creating product: {ex.Message}", Severity.Error);
+        }
+    }
+
+    public class ColorVariantInput
+    {
+        public string ColorName { get; set; } = string.Empty;
+        public string ImageUrl { get; set; } = string.Empty;
+    }
+}

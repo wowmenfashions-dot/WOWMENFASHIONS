@@ -1,0 +1,94 @@
+@page "/admin/homepage"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+@using wowmenfashions.Services
+@inject IHomepageConfigService HomepageConfigService
+@inject ISnackbar Snackbar
+
+<PageTitle>Homepage Config | Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="my-8">
+    <MudText Typo="Typo.h4" Class="mb-6">Homepage Configuration</MudText>
+
+    <MudPaper Class="pa-6 mb-6">
+        <MudText Typo="Typo.h6" Class="mb-4">Announcement Bar</MudText>
+        <MudTextField @bind-Value="_announcement" Label="Announcement Text" Variant="Variant.Outlined" Lines="2" Class="mb-4" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveAnnouncementAsync">Save Announcement</MudButton>
+    </MudPaper>
+
+    <MudPaper Class="pa-6">
+        <MudText Typo="Typo.h6" Class="mb-4">Carousel Images</MudText>
+        
+        @foreach (var img in _carouselImages)
+        {
+            <MudGrid Class="align-center mb-2">
+                <MudItem xs="10">
+                    <MudTextField @bind-Value="img.Url" Label="Image URL" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                </MudItem>
+                <MudItem xs="2">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => _carouselImages.Remove(img))" />
+                </MudItem>
+            </MudGrid>
+        }
+        
+        <MudButton StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Text" Color="Color.Primary" OnClick="AddCarouselImage" Class="mb-4">Add Image</MudButton>
+        
+        <div class="d-flex justify-end mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveCarouselAsync">Save Carousel</MudButton>
+        </div>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private string _announcement = string.Empty;
+    private List<CarouselImageInput> _carouselImages = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _announcement = await HomepageConfigService.GetAnnouncementAsync();
+        
+        var images = await HomepageConfigService.GetCarouselImagesAsync();
+        _carouselImages = images.Select(img => new CarouselImageInput { Url = img }).ToList();
+    }
+
+    private async Task SaveAnnouncementAsync()
+    {
+        try
+        {
+            await HomepageConfigService.SetAnnouncementAsync(_announcement);
+            Snackbar.Add("Announcement updated successfully!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void AddCarouselImage()
+    {
+        _carouselImages.Add(new CarouselImageInput());
+    }
+
+    private async Task SaveCarouselAsync()
+    {
+        try
+        {
+            var validImages = _carouselImages
+                .Where(c => !string.IsNullOrWhiteSpace(c.Url))
+                .Select(c => c.Url)
+                .ToList();
+                
+            await HomepageConfigService.SetCarouselImagesAsync(validImages);
+            Snackbar.Add("Carousel images updated successfully!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    public class CarouselImageInput
+    {
+        public string Url { get; set; } = string.Empty;
+    }
+}

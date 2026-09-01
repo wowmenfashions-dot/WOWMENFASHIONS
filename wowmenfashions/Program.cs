@@ -19,7 +19,10 @@ builder.Services.AddSingleton<ISqlConnectionFactory, SqlConnectionFactory>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<GuestSessionService>();
+
 builder.Services.AddScoped<ICartRepository, CartRepository>();
+builder.Services.AddScoped<IHomepageConfigRepository, HomepageConfigRepository>();
+builder.Services.AddScoped<IHomepageConfigService, HomepageConfigService>();
 builder.Services.AddScoped<ICartService, CartService>();
 
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();

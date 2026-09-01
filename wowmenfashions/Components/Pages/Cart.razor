@@ -41,10 +41,10 @@
                         <RowTemplate>
                             <MudTd DataLabel="Product">
                                 <div class="d-flex align-center">
-                                    <MudImage Src="@context.Product.ImageUrl" Alt="@context.Product.Name" Style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;" Class="me-4" />
+                                    <MudImage Src="@context.GetImageUrl()" Alt="@context.Product.Name" Style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;" Class="me-4" />
                                     <div>
                                         <MudText Typo="Typo.subtitle1" Class="fw-bold">@context.Product.Name</MudText>
-                                        <MudText Typo="Typo.caption" Color="Color.Default" Class="text-muted">Color: @context.Product.Color</MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Default" Class="text-muted">Color: @(context.SelectedColor ?? context.Product.Color)</MudText>
                                     </div>
                                 </div>
                             </MudTd>
@@ -131,7 +131,8 @@
                         Id = item.Id,
                         ProductId = item.ProductId,
                         Quantity = item.Quantity,
-                        Product = product
+                        Product = product,
+                        SelectedColor = item.SelectedColor
                     });
                 }
             }
@@ -173,5 +174,15 @@
         public int ProductId { get; set; }
         public int Quantity { get; set; }
         public ProductDto Product { get; set; } = null!;
+        public string? SelectedColor { get; set; }
+
+        public string GetImageUrl()
+        {
+            if (!string.IsNullOrEmpty(SelectedColor) && Product.ColorImages != null && Product.ColorImages.TryGetValue(SelectedColor, out var img))
+            {
+                return img;
+            }
+            return Product.ImageUrl;
+        }
     }
 }

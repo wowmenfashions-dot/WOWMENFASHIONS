@@ -1,9 +1,18 @@
 @page "/"
+@using wowmenfashions.Services
 @inject NavigationManager NavigationManager
+@inject IHomepageConfigService HomepageConfigService
 
 <PageTitle>WOWMENFASHIONS - Premium Leather Bags & Wallets</PageTitle>
 
 <div class="homepage-container pb-16">
+    @if (!string.IsNullOrEmpty(AnnouncementText))
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Square="true" Class="text-center py-2 mud-width-full" Style="border-radius: 0; background-color: #000;">
+            <MudText Typo="Typo.subtitle1" Class="fw-bold text-white">@AnnouncementText</MudText>
+        </MudAlert>
+    }
+
     <!-- Main Carousel -->
     <MudCarousel Class="mud-width-full carousel-section" Style="height: 400px;" ItemsSource="@Images" AutoCycle="true">
         <ItemTemplate>
@@ -134,10 +143,14 @@
 </div>
 
 @code {
-    private List<string> Images = new()
+    private List<string> Images = new();
+    private string AnnouncementText = string.Empty;
+
+    protected override async Task OnInitializedAsync()
     {
-        "/images/banners/carousel1.png"
-    };
+        AnnouncementText = await HomepageConfigService.GetAnnouncementAsync();
+        Images = await HomepageConfigService.GetCarouselImagesAsync();
+    }
 }
 
 <style>

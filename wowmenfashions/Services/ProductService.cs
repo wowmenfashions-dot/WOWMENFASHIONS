@@ -135,9 +135,13 @@ public class ProductService : IProductService
     {
         using var connection = _sqlConnectionFactory.CreateConnection();
         var query = @"
-            INSERT INTO Products (CategoryId, Category, Name, Description, Price, OriginalPrice, ImageUrl, Color)
-            VALUES (@CategoryId, @Category, @Name, @Description, @Price, @OriginalPrice, @ImageUrl, @Color);
-            SELECT CAST(SCOPE_IDENTITY() as int);";
+            DECLARE @NextId INT;
+            SELECT @NextId = ISNULL(MAX(Id), 0) + 1 FROM Products;
+            
+            INSERT INTO Products (Id, CategoryId, Category, Name, Description, Price, OriginalPrice, ImageUrl, Color)
+            VALUES (@NextId, @CategoryId, @Category, @Name, @Description, @Price, @OriginalPrice, @ImageUrl, @Color);
+            
+            SELECT @NextId;";
             
         product.Id = await connection.QuerySingleAsync<int>(query, product);
         

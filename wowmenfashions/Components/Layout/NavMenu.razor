@@ -9,6 +9,8 @@
         <Authorized>
             <AuthorizeView Roles="Admin" Context="adminContext">
                 <MudNavLink Href="/admin" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Dashboard" IconColor="Color.Error">Admin Dashboard</MudNavLink>
+                <MudNavLink Href="/admin/products/new" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.AddBox" IconColor="Color.Error">New Product</MudNavLink>
+                <MudNavLink Href="/admin/homepage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Settings" IconColor="Color.Error">Homepage Settings</MudNavLink>
             </AuthorizeView>
             <MudNavLink Href="account/profile" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.AccountCircle" IconColor="Color.Primary">Profile</MudNavLink>
             <MudNavLink Href="/api/auth/logout" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.ExitToApp" IconColor="Color.Dark">Logout</MudNavLink>
