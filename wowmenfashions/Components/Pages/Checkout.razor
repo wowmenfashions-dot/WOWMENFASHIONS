@@ -4,6 +4,7 @@
 @using wowmenfashions.Data.Entities
 @inject ICartService CartService
 @inject ICheckoutService CheckoutService
+@inject IStoreSettingsService StoreSettingsService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
 @inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
@@ -11,6 +12,7 @@
 @inject IRazorpayService RazorpayService
 @inject IJSRuntime JSRuntime
 @inject IConfiguration Configuration
+@inject ILogger<Checkout> Logger
 
 <PageTitle>Checkout - WOWMEN</PageTitle>
 
@@ -54,16 +56,28 @@
                                     <MudTextField @bind-Value="CheckoutModel.Email" Label="Email Address" For="@(() => CheckoutModel.Email)" Required="true" />
                                 </MudItem>
                                 <MudItem xs="12">
-                                    <MudTextField @bind-Value="CheckoutModel.Address" Label="Shipping Address" For="@(() => CheckoutModel.Address)" Required="true" />
+                                    <MudTextField @bind-Value="CheckoutModel.AddressLine1" Label="Address Line 1" For="@(() => CheckoutModel.AddressLine1)" Required="true" />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudTextField @bind-Value="CheckoutModel.AddressLine2" Label="Address Line 2 (Optional)" For="@(() => CheckoutModel.AddressLine2)" />
                                 </MudItem>
                                 <MudItem xs="12" sm="4">
                                     <MudTextField @bind-Value="CheckoutModel.City" Label="City" For="@(() => CheckoutModel.City)" Required="true" />
                                 </MudItem>
                                 <MudItem xs="12" sm="4">
-                                    <MudTextField @bind-Value="CheckoutModel.PostalCode" Label="Postal Code" For="@(() => CheckoutModel.PostalCode)" Required="true" />
+                                    <MudTextField @bind-Value="CheckoutModel.State" Label="State" For="@(() => CheckoutModel.State)" Required="true" />
                                 </MudItem>
                                 <MudItem xs="12" sm="4">
                                     <MudTextField @bind-Value="CheckoutModel.Country" Label="Country" For="@(() => CheckoutModel.Country)" Required="true" />
+                                </MudItem>
+                                <MudItem xs="12" sm="4">
+                                    <MudTextField @bind-Value="CheckoutModel.PostalCode" Label="Postal Code" For="@(() => CheckoutModel.PostalCode)" Required="true" />
+                                </MudItem>
+                                <MudItem xs="12" sm="4">
+                                    <MudTextField @bind-Value="CheckoutModel.ContactNumber" Label="Contact Number" For="@(() => CheckoutModel.ContactNumber)" Required="true" />
+                                </MudItem>
+                                <MudItem xs="12" sm="4">
+                                    <MudTextField @bind-Value="CheckoutModel.Landmark" Label="Nearby Landmark (Optional)" For="@(() => CheckoutModel.Landmark)" />
                                 </MudItem>
 
                                 <!-- Razorpay Payment Section -->
@@ -150,8 +164,8 @@
                         }
 
                         <MudGrid Class="mb-1">
-                            <MudItem xs="6"><MudText Typo="Typo.body2">Shipping (Flat Rate)</MudText></MudItem>
-                            <MudItem xs="6" Class="d-flex justify-end"><MudText Typo="Typo.body2">@ShippingFee.ToString("C")</MudText></MudItem>
+                            <MudItem xs="6"><MudText Typo="Typo.body2">Shipping</MudText></MudItem>
+                            <MudItem xs="6" Class="d-flex justify-end"><MudText Typo="Typo.body2">@(ShippingFee == 0 ? "Free" : ShippingFee.ToString("C"))</MudText></MudItem>
                         </MudGrid>
                         
                         <MudGrid Class="mb-1">
@@ -182,16 +196,19 @@
     private string CouponCode = string.Empty;
     private string AppliedCoupon = string.Empty;
 
+    private StoreSettingsDto _storeSettings = new StoreSettingsDto();
+    
     // Calculations
     private decimal Subtotal => ShoppingCart?.Items.Sum(i => i.UnitPrice * i.Quantity) ?? 0;
     private decimal DiscountAmount => !string.IsNullOrWhiteSpace(AppliedCoupon) ? Subtotal * 0.10m : 0m;
     private decimal SubtotalAfterDiscount => Subtotal - DiscountAmount;
-    private decimal ShippingFee => ShoppingCart != null && ShoppingCart.Items.Any() ? 10.00m : 0m; // Flat rate $10
+    private decimal ShippingFee => ShoppingCart != null && ShoppingCart.Items.Any() ? (SubtotalAfterDiscount < _storeSettings.FreeShippingThreshold ? _storeSettings.ShippingChargeAmount : 0m) : 0m;
     private decimal TaxAmount => SubtotalAfterDiscount * 0.10m; // 10% GST
     private decimal FinalTotal => SubtotalAfterDiscount + ShippingFee + TaxAmount;
 
     protected override async Task OnInitializedAsync()
     {
+        _storeSettings = await StoreSettingsService.GetStoreSettingsAsync();
         ShoppingCart = await CartService.GetCartAsync();
 
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -211,10 +228,14 @@
                     if (defaultShipping != null)
                     {
                         CheckoutModel.FullName = defaultShipping.FullName;
-                        CheckoutModel.Address = defaultShipping.AddressLine;
+                        CheckoutModel.AddressLine1 = defaultShipping.AddressLine;
+                        CheckoutModel.AddressLine2 = defaultShipping.AddressLine2;
                         CheckoutModel.City = defaultShipping.City;
+                        CheckoutModel.State = defaultShipping.State ?? "";
                         CheckoutModel.PostalCode = defaultShipping.PostalCode;
                         CheckoutModel.Country = defaultShipping.Country;
+                        CheckoutModel.ContactNumber = defaultShipping.ContactNumber ?? "";
+                        CheckoutModel.Landmark = defaultShipping.Landmark;
                     }
                 }
             }
@@ -244,17 +265,54 @@
 
         try
         {
+            Logger.LogInformation("Initiating order placement for {Email}", CheckoutModel.Email);
+            
+            // 1. Create Razorpay Order
             string receiptId = Guid.NewGuid().ToString("N");
-            string orderId = await RazorpayService.CreateOrderAsync(FinalTotal, receiptId);
+            string razorpayOrderId = await RazorpayService.CreateOrderAsync(FinalTotal, receiptId);
 
+            // 2. Create Pending Order in Database
+            var orderDto = new OrderDto
+            {
+                Subtotal = Subtotal,
+                ShippingFee = ShippingFee,
+                TaxAmount = TaxAmount,
+                DiscountAmount = DiscountAmount,
+                TotalAmount = FinalTotal,
+                Status = "Pending",
+                RazorpayOrderId = razorpayOrderId,
+                CustomerName = CheckoutModel.FullName,
+                CustomerEmail = CheckoutModel.Email,
+                ShippingAddressLine1 = CheckoutModel.AddressLine1,
+                ShippingAddressLine2 = CheckoutModel.AddressLine2,
+                ShippingCity = CheckoutModel.City,
+                ShippingState = CheckoutModel.State,
+                ShippingCountry = CheckoutModel.Country,
+                ShippingPostalCode = CheckoutModel.PostalCode,
+                ShippingContactNumber = CheckoutModel.ContactNumber,
+                ShippingLandmark = CheckoutModel.Landmark,
+                Items = ShoppingCart.Items.Select(i => new OrderItemDto
+                {
+                    ProductId = i.ProductId,
+                    ProductName = i.ProductName ?? "Unknown Product",
+                    Price = i.UnitPrice,
+                    Quantity = i.Quantity,
+                    SelectedColor = i.SelectedColor
+                }).ToList()
+            };
+
+            int pendingOrderId = await CheckoutService.CreatePendingOrderAsync(orderDto);
+            Logger.LogInformation("Pending order {OrderId} created in database. Opening Razorpay.", pendingOrderId);
+
+            // 3. Open Razorpay Checkout
             var options = new
             {
-                key = Configuration["Razorpay:KeyId"], // Loaded securely from config
+                key = Configuration["Razorpay:KeyId"],
                 amount = (int)(FinalTotal * 100),
                 currency = "INR",
                 name = "WOWMEN FASHIONS",
-                description = "Purchase of premium leather goods",
-                order_id = orderId,
+                description = "Purchase of premium products",
+                order_id = razorpayOrderId,
                 prefill = new
                 {
                     name = CheckoutModel.FullName,
@@ -268,42 +326,33 @@
 
             var paymentResult = await JSRuntime.InvokeAsync<dynamic>("window.razorpayInterop.openCheckout", options);
 
-            // If we reach here, payment was successful according to the frontend callback
-            var orderDto = new OrderDto
+            // 4. Verify Payment on Success
+            string rzpPaymentId = paymentResult.GetProperty("razorpayPaymentId").GetString();
+            string rzpSignature = paymentResult.GetProperty("razorpaySignature").GetString();
+
+            bool isVerified = await CheckoutService.VerifyAndCompleteOrderAsync(pendingOrderId, razorpayOrderId, rzpPaymentId, rzpSignature);
+
+            if (isVerified)
             {
-                Subtotal = Subtotal,
-                ShippingFee = ShippingFee,
-                TaxAmount = TaxAmount,
-                DiscountAmount = DiscountAmount,
-                TotalAmount = FinalTotal,
-                Status = "PaymentCompleted",
-                RazorpayOrderId = paymentResult.GetProperty("razorpayOrderId").GetString(),
-                RazorpayPaymentId = paymentResult.GetProperty("razorpayPaymentId").GetString(),
-                CustomerName = CheckoutModel.FullName,
-                CustomerEmail = CheckoutModel.Email,
-                ShippingAddress = $"{CheckoutModel.Address}, {CheckoutModel.City}, {CheckoutModel.PostalCode}, {CheckoutModel.Country}",
-                Items = ShoppingCart.Items.Select(i => new OrderItemDto
+                Logger.LogInformation("Order {OrderId} successfully verified and completed.", pendingOrderId);
+                
+                foreach(var item in ShoppingCart.Items)
                 {
-                    ProductId = i.ProductId,
-                    ProductName = i.ProductName ?? "Unknown Product",
-                    Price = i.UnitPrice,
-                    Quantity = i.Quantity,
-                    SelectedColor = i.SelectedColor
-                }).ToList()
-            };
+                    await CartService.RemoveItemAsync(item.Id);
+                }
 
-            await CheckoutService.PlaceOrderAsync(orderDto);
-
-            foreach(var item in ShoppingCart.Items)
-            {
-                await CartService.RemoveItemAsync(item.Id);
+                IsOrderPlaced = true;
+                ShoppingCart = null;
             }
-
-            IsOrderPlaced = true;
-            ShoppingCart = null;
+            else
+            {
+                Logger.LogWarning("Payment verification failed for Order {OrderId}", pendingOrderId);
+                Snackbar.Add("Payment verification failed. If your account was charged, please contact support.", Severity.Error);
+            }
         }
         catch (Exception ex)
         {
+            Logger.LogError(ex, "Payment failed or cancelled during checkout");
             Snackbar.Add($"Payment failed or was cancelled: {ex.Message}", Severity.Error);
         }
         finally

@@ -139,7 +139,7 @@ public class CustomerService : ICustomerService
     {
         using var connection = _sqlConnectionFactory.CreateConnection();
         return await connection.QueryAsync<wowmenfashions.Models.CustomerAddressDto>(
-            "SELECT Id, CustomerId, FullName, AddressLine, City, PostalCode, Country, IsDefaultShipping, IsDefaultBilling FROM CustomerAddresses WHERE CustomerId = @CustomerId",
+            "SELECT Id, CustomerId, FullName, AddressLine, AddressLine2, City, State, PostalCode, Country, ContactNumber, Landmark, IsDefaultShipping, IsDefaultBilling FROM CustomerAddresses WHERE CustomerId = @CustomerId",
             new { CustomerId = customerId });
     }
 
@@ -156,14 +156,16 @@ public class CustomerService : ICustomerService
         if (address.Id == 0)
         {
             await connection.ExecuteAsync(
-                "INSERT INTO CustomerAddresses (CustomerId, FullName, AddressLine, City, PostalCode, Country, IsDefaultShipping, IsDefaultBilling) VALUES (@CustomerId, @FullName, @AddressLine, @City, @PostalCode, @Country, @IsDefaultShipping, @IsDefaultBilling)",
-                address);
+                "dbo.Address_Create",
+                address,
+                commandType: CommandType.StoredProcedure);
         }
         else
         {
             await connection.ExecuteAsync(
-                "UPDATE CustomerAddresses SET FullName = @FullName, AddressLine = @AddressLine, City = @City, PostalCode = @PostalCode, Country = @Country, IsDefaultShipping = @IsDefaultShipping, IsDefaultBilling = @IsDefaultBilling WHERE Id = @Id",
-                address);
+                "dbo.Address_Update",
+                address,
+                commandType: CommandType.StoredProcedure);
         }
         return true;
     }

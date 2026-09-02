@@ -1,0 +1,97 @@
+@page "/admin/store-settings"
+@using wowmenfashions.Models
+@using wowmenfashions.Services
+@inject IStoreSettingsService StoreSettingsService
+@inject ISnackbar Snackbar
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+
+<PageTitle>Store Settings - Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-8">
+    <MudText Typo="Typo.h4" Class="mb-6">Store Settings</MudText>
+
+    @if (_isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else
+    {
+        <MudCard>
+            <MudCardContent>
+                <MudForm @ref="_form" @bind-IsValid="@_isValid">
+                    <MudGrid>
+                        <MudItem xs="12" md="6">
+                            <MudNumericField @bind-Value="_settings.FreeShippingThreshold" 
+                                           Label="Free Shipping Threshold (INR)" 
+                                           Variant="Variant.Outlined"
+                                           Min="0"
+                                           Format="N2"
+                                           Required="true"
+                                           RequiredError="Threshold is required" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudNumericField @bind-Value="_settings.ShippingChargeAmount" 
+                                           Label="Shipping Charge Amount (INR)" 
+                                           Variant="Variant.Outlined"
+                                           Min="0"
+                                           Format="N2"
+                                           Required="true"
+                                           RequiredError="Shipping charge is required" />
+                        </MudItem>
+                    </MudGrid>
+                </MudForm>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_isValid)" OnClick="SaveSettings">
+                    Save Settings
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    }
+</MudContainer>
+
+@code {
+    private StoreSettingsDto _settings = new();
+    private bool _isLoading = true;
+    private MudForm _form = null!;
+    private bool _isValid;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _settings = await StoreSettingsService.GetStoreSettingsAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading settings: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task SaveSettings()
+    {
+        await _form.ValidateAsync();
+        if (!_isValid) return;
+
+        try
+        {
+            var success = await StoreSettingsService.UpdateStoreSettingsAsync(_settings);
+            if (success)
+            {
+                Snackbar.Add("Store settings updated successfully.", Severity.Success);
+            }
+            else
+            {
+                Snackbar.Add("Failed to update store settings.", Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error saving settings: {ex.Message}", Severity.Error);
+        }
+    }
+}

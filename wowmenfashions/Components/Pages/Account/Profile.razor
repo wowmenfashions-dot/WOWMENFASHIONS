@@ -76,8 +76,20 @@
                                     </MudCardHeader>
                                     <MudCardContent>
                                         <MudText Typo="Typo.body2">@addr.AddressLine</MudText>
-                                        <MudText Typo="Typo.body2">@addr.City, @addr.PostalCode</MudText>
+                                        @if (!string.IsNullOrEmpty(addr.AddressLine2))
+                                        {
+                                            <MudText Typo="Typo.body2">@addr.AddressLine2</MudText>
+                                        }
+                                        <MudText Typo="Typo.body2">@addr.City, @addr.State @addr.PostalCode</MudText>
                                         <MudText Typo="Typo.body2">@addr.Country</MudText>
+                                        @if (!string.IsNullOrEmpty(addr.ContactNumber))
+                                        {
+                                            <MudText Typo="Typo.body2">Phone: @addr.ContactNumber</MudText>
+                                        }
+                                        @if (!string.IsNullOrEmpty(addr.Landmark))
+                                        {
+                                            <MudText Typo="Typo.body2">Landmark: @addr.Landmark</MudText>
+                                        }
                                         @if (addr.IsDefaultShipping)
                                         {
                                             <MudChip T="string" Color="Color.Primary" Size="Size.Small" Class="mt-2">Default Shipping</MudChip>
@@ -93,16 +105,22 @@
                     
                     <MudForm @ref="_addressForm" @bind-IsValid="@_addressSuccess">
                         <MudTextField @bind-Value="_newAddress.FullName" Label="Full Name" Required="true" Class="mb-4" />
-                        <MudTextField @bind-Value="_newAddress.AddressLine" Label="Address Line" Required="true" Class="mb-4" />
+                        <MudTextField @bind-Value="_newAddress.AddressLine" Label="Address Line 1" Required="true" Class="mb-4" />
+                        <MudTextField @bind-Value="_newAddress.AddressLine2" Label="Address Line 2 (Optional)" Class="mb-4" />
                         <MudGrid>
-                            <MudItem xs="6">
+                            <MudItem xs="4">
                                 <MudTextField @bind-Value="_newAddress.City" Label="City" Required="true" Class="mb-4" />
                             </MudItem>
-                            <MudItem xs="6">
+                            <MudItem xs="4">
+                                <MudTextField @bind-Value="_newAddress.State" Label="State" Required="true" Class="mb-4" />
+                            </MudItem>
+                            <MudItem xs="4">
                                 <MudTextField @bind-Value="_newAddress.PostalCode" Label="Postal Code" Required="true" Class="mb-4" />
                             </MudItem>
                         </MudGrid>
                         <MudTextField @bind-Value="_newAddress.Country" Label="Country" Required="true" Class="mb-4" />
+                        <MudTextField @bind-Value="_newAddress.ContactNumber" Label="Contact Number" Required="true" Class="mb-4" />
+                        <MudTextField @bind-Value="_newAddress.Landmark" Label="Nearby Landmark (Optional)" Class="mb-4" />
                         <MudCheckBox @bind-Value="_newAddress.IsDefaultShipping" Label="Set as Default Shipping" Class="mb-4" />
                         
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!_addressSuccess)" OnClick="SaveAddress">

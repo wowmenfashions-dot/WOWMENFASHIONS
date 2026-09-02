@@ -5,6 +5,9 @@ using Hangfire;
 using MudBlazor.Services;
 using wowmenfashions.Components;
 using wowmenfashions.Data;
+using wowmenfashions.Repositories;
+using wowmenfashions.Services;
+using wowmenfashions.Models;
 using wowmenfashions.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,6 +39,8 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<IHomepageConfigRepository, HomepageConfigRepository>();
 builder.Services.AddScoped<IHomepageConfigService, HomepageConfigService>();
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IStoreSettingsRepository, StoreSettingsRepository>();
+builder.Services.AddScoped<IStoreSettingsService, StoreSettingsService>();
 
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();

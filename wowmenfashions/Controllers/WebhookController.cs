@@ -12,18 +12,41 @@ namespace wowmenfashions.Controllers
     {
         private readonly ISqlConnectionFactory _sqlConnectionFactory;
         private readonly ILogger<WebhookController> _logger;
+        private readonly string _webhookSecret;
 
-        public WebhookController(ISqlConnectionFactory sqlConnectionFactory, ILogger<WebhookController> logger)
+        public WebhookController(ISqlConnectionFactory sqlConnectionFactory, ILogger<WebhookController> logger, IConfiguration configuration)
         {
             _sqlConnectionFactory = sqlConnectionFactory;
             _logger = logger;
+            _webhookSecret = configuration["Razorpay:WebhookSecret"] ?? "dummy_secret_for_now";
         }
 
         [HttpPost("razorpay")]
-        public async Task<IActionResult> HandleRazorpayWebhook([FromBody] JsonElement payload)
+        public async Task<IActionResult> HandleRazorpayWebhook()
         {
             try
             {
+                using var reader = new StreamReader(Request.Body);
+                var payloadString = await reader.ReadToEndAsync();
+                
+                var signature = Request.Headers["X-Razorpay-Signature"].FirstOrDefault();
+                if (string.IsNullOrEmpty(signature))
+                {
+                    _logger.LogWarning("Webhook received without X-Razorpay-Signature header");
+                    return BadRequest("Missing signature");
+                }
+                
+                try
+                {
+                    Razorpay.Api.Utils.verifyWebhookSignature(payloadString, signature, _webhookSecret);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Webhook signature verification failed");
+                    return BadRequest("Invalid signature");
+                }
+
+                var payload = JsonDocument.Parse(payloadString).RootElement;
                 var eventName = payload.GetProperty("event").GetString();
                 var paymentEntity = payload.GetProperty("payload").GetProperty("payment").GetProperty("entity");
                 var orderId = paymentEntity.GetProperty("order_id").GetString();

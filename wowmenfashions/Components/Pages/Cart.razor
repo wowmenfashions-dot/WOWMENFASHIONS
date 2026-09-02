@@ -3,6 +3,7 @@
 @using wowmenfashions.Services
 @inject ICartService CartService
 @inject IProductService ProductService
+@inject IStoreSettingsService StoreSettingsService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 
@@ -73,8 +74,8 @@
                     </div>
                     
                     <div class="d-flex justify-space-between mb-2">
-                        <MudText Typo="Typo.body2" Class="text-muted">Shipping (Flat Rate)</MudText>
-                        <MudText Typo="Typo.body2" Class="fw-bold">@_shipping.ToString("C")</MudText>
+                        <MudText Typo="Typo.body2" Class="text-muted">Shipping</MudText>
+                        <MudText Typo="Typo.body2" Class="fw-bold">@(_shipping == 0 ? "Free" : _shipping.ToString("C"))</MudText>
                     </div>
 
                     <div class="d-flex justify-space-between mb-2">
@@ -101,14 +102,16 @@
 @code {
     private bool _isLoading = true;
     private List<CartItemViewModel> _cartItems = new();
+    private StoreSettingsDto _storeSettings = new StoreSettingsDto();
     
     private decimal _subtotal => _cartItems.Sum(i => i.Product.Price * i.Quantity);
-    private decimal _shipping => _cartItems.Any() ? 10.00m : 0m;
+    private decimal _shipping => _cartItems.Any() ? (_subtotal < _storeSettings.FreeShippingThreshold ? _storeSettings.ShippingChargeAmount : 0m) : 0m;
     private decimal _tax => _subtotal * 0.10m;
     private decimal _finalTotal => _subtotal + _shipping + _tax;
     
     protected override async Task OnInitializedAsync()
     {
+        _storeSettings = await StoreSettingsService.GetStoreSettingsAsync();
         await LoadCartAsync();
     }
 

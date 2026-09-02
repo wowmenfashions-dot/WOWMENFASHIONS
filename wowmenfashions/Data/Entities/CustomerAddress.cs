@@ -8,9 +8,13 @@ public class CustomerAddress
     public int CustomerId { get; set; }
     public string FullName { get; set; } = string.Empty;
     public string AddressLine { get; set; } = string.Empty;
+    public string? AddressLine2 { get; set; }
     public string City { get; set; } = string.Empty;
+    public string? State { get; set; }
     public string PostalCode { get; set; } = string.Empty;
-    public string Country { get; set; } = string.Empty;
+    public string Country { get; set; } = "India";
+    public string? ContactNumber { get; set; }
+    public string? Landmark { get; set; }
     public bool IsDefaultShipping { get; set; }
     public bool IsDefaultBilling { get; set; }
     public DateTime CreatedAt { get; set; }

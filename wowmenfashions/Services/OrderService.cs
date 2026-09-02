@@ -49,10 +49,20 @@ namespace wowmenfashions.Services
                 order.Items = items.AsList();
                 
                 // Decrypt PII
-                if (!string.IsNullOrEmpty(order.ShippingAddress))
-                {
-                    order.ShippingAddress = _encryptionService.Decrypt(order.ShippingAddress);
-                }
+                if (!string.IsNullOrEmpty(order.ShippingAddressLine1))
+                    order.ShippingAddressLine1 = _encryptionService.Decrypt(order.ShippingAddressLine1);
+                
+                if (!string.IsNullOrEmpty(order.ShippingAddressLine2))
+                    order.ShippingAddressLine2 = _encryptionService.Decrypt(order.ShippingAddressLine2);
+
+                if (!string.IsNullOrEmpty(order.ShippingPostalCode))
+                    order.ShippingPostalCode = _encryptionService.Decrypt(order.ShippingPostalCode);
+
+                if (!string.IsNullOrEmpty(order.ShippingContactNumber))
+                    order.ShippingContactNumber = _encryptionService.Decrypt(order.ShippingContactNumber);
+
+                if (!string.IsNullOrEmpty(order.ShippingLandmark))
+                    order.ShippingLandmark = _encryptionService.Decrypt(order.ShippingLandmark);
             }
 
             return orders;

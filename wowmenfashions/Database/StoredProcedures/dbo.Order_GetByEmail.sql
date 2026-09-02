@@ -1,4 +1,4 @@
-CREATE PROCEDURE [dbo].[Order_GetByEmail]
+CREATE OR ALTER PROCEDURE [dbo].[Order_GetByEmail]
     @Email NVARCHAR(100)
 AS
 BEGIN
@@ -15,7 +15,14 @@ BEGIN
         Status, 
         CustomerName, 
         CustomerEmail, 
-        ShippingAddress,
+        ShippingAddressLine1,
+        ShippingAddressLine2,
+        ShippingCity,
+        ShippingState,
+        ShippingCountry,
+        ShippingPostalCode,
+        ShippingContactNumber,
+        ShippingLandmark,
         CourierName,
         TrackingNumber,
         TrackingUrl

@@ -18,7 +18,14 @@ namespace wowmenfashions.Models
         public string PaymentStatus { get; set; } = "Pending";
         public string CustomerName { get; set; } = string.Empty;
         public string CustomerEmail { get; set; } = string.Empty;
-        public string ShippingAddress { get; set; } = string.Empty;
+        public string ShippingAddressLine1 { get; set; } = string.Empty;
+        public string? ShippingAddressLine2 { get; set; }
+        public string ShippingCity { get; set; } = string.Empty;
+        public string ShippingState { get; set; } = string.Empty;
+        public string ShippingCountry { get; set; } = "India";
+        public string ShippingPostalCode { get; set; } = string.Empty;
+        public string ShippingContactNumber { get; set; } = string.Empty;
+        public string? ShippingLandmark { get; set; }
         public string? CourierName { get; set; }
         public string? TrackingNumber { get; set; }
         public string? TrackingUrl { get; set; }

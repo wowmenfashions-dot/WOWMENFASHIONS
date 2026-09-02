@@ -10,7 +10,8 @@ namespace wowmenfashions.Services
 {
     public interface ICheckoutService
     {
-        Task<int> PlaceOrderAsync(OrderDto order);
+        Task<int> CreatePendingOrderAsync(OrderDto order);
+        Task<bool> VerifyAndCompleteOrderAsync(int orderId, string razorpayOrderId, string razorpayPaymentId, string signature);
         Task<bool> ProcessPaymentAsync(CheckoutModel paymentDetails);
     }
 
@@ -18,16 +19,21 @@ namespace wowmenfashions.Services
     {
         private readonly string _connectionString;
         private readonly IEncryptionService _encryptionService;
+        private readonly ILogger<CheckoutService> _logger;
+        private readonly IRazorpayService _razorpayService;
 
-        public CheckoutService(IConfiguration configuration, IEncryptionService encryptionService)
+        public CheckoutService(IConfiguration configuration, IEncryptionService encryptionService, ILogger<CheckoutService> logger, IRazorpayService razorpayService)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection") 
                 ?? throw new InvalidOperationException("DefaultConnection string not found.");
             _encryptionService = encryptionService;
+            _logger = logger;
+            _razorpayService = razorpayService;
         }
 
-        public async Task<int> PlaceOrderAsync(OrderDto order)
+        public async Task<int> CreatePendingOrderAsync(OrderDto order)
         {
+            _logger.LogInformation("Creating pending order for {CustomerEmail}", order.CustomerEmail);
             using var connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
             using var transaction = connection.BeginTransaction();
@@ -40,13 +46,20 @@ namespace wowmenfashions.Services
                 p.Add("@TaxAmount", order.TaxAmount);
                 p.Add("@DiscountAmount", order.DiscountAmount);
                 p.Add("@TotalAmount", order.TotalAmount);
-                p.Add("@Status", order.Status);
+                p.Add("@Status", "Pending");
                 p.Add("@CustomerName", order.CustomerName);
                 p.Add("@CustomerEmail", order.CustomerEmail);
-                p.Add("@ShippingAddress", _encryptionService.Encrypt(order.ShippingAddress));
+                p.Add("@ShippingAddressLine1", _encryptionService.Encrypt(order.ShippingAddressLine1));
+                p.Add("@ShippingAddressLine2", order.ShippingAddressLine2 != null ? _encryptionService.Encrypt(order.ShippingAddressLine2) : null);
+                p.Add("@ShippingCity", order.ShippingCity);
+                p.Add("@ShippingState", order.ShippingState);
+                p.Add("@ShippingCountry", order.ShippingCountry);
+                p.Add("@ShippingPostalCode", _encryptionService.Encrypt(order.ShippingPostalCode));
+                p.Add("@ShippingContactNumber", _encryptionService.Encrypt(order.ShippingContactNumber));
+                p.Add("@ShippingLandmark", order.ShippingLandmark != null ? _encryptionService.Encrypt(order.ShippingLandmark) : null);
                 p.Add("@RazorpayOrderId", order.RazorpayOrderId);
-                p.Add("@RazorpayPaymentId", order.RazorpayPaymentId);
-                p.Add("@PaymentStatus", order.PaymentStatus);
+                p.Add("@RazorpayPaymentId", (string?)null);
+                p.Add("@PaymentStatus", "Pending");
                 p.Add("@OrderId", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
                 await connection.ExecuteAsync(
@@ -74,11 +87,51 @@ namespace wowmenfashions.Services
                 }
 
                 transaction.Commit();
+                _logger.LogInformation("Pending order {OrderId} created successfully", newOrderId);
                 return newOrderId;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Failed to create pending order");
                 transaction.Rollback();
+                throw;
+            }
+        }
+
+        public async Task<bool> VerifyAndCompleteOrderAsync(int orderId, string razorpayOrderId, string razorpayPaymentId, string signature)
+        {
+            _logger.LogInformation("Verifying and completing order {OrderId}", orderId);
+            
+            bool isSignatureValid = _razorpayService.VerifyPaymentSignature(razorpayOrderId, razorpayPaymentId, signature);
+            if (!isSignatureValid)
+            {
+                _logger.LogWarning("Invalid payment signature for order {OrderId}. Transaction aborted.", orderId);
+                return false;
+            }
+
+            using var connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            try
+            {
+                await connection.ExecuteAsync(
+                    "dbo.Order_UpdatePayment",
+                    new {
+                        OrderId = orderId,
+                        RazorpayOrderId = razorpayOrderId,
+                        RazorpayPaymentId = razorpayPaymentId,
+                        RazorpaySignature = signature,
+                        PaymentStatus = "Captured",
+                        Status = "PaymentCompleted"
+                    },
+                    commandType: CommandType.StoredProcedure);
+
+                _logger.LogInformation("Order {OrderId} completed successfully", orderId);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update payment status for order {OrderId}", orderId);
                 throw;
             }
         }
