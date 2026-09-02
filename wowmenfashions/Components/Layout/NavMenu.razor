@@ -5,12 +5,15 @@
     <MudNavLink Href="/category/womens" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Female" IconColor="Color.Secondary">Women's</MudNavLink>
     <MudNavLink Href="/category/kids" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Toys" IconColor="Color.Success">Kids</MudNavLink>
     <MudNavLink Href="/category/toddler" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.ChildFriendly" IconColor="Color.Warning">Toddler</MudNavLink>
+    <MudNavLink Href="/aboutus" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Info" IconColor="Color.Info">About Us</MudNavLink>
+    <MudNavLink Href="/contactus" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.ContactPage" IconColor="Color.Default">Contact Us</MudNavLink>
     <AuthorizeView>
         <Authorized>
             <AuthorizeView Roles="Admin" Context="adminContext">
                 <MudNavLink Href="/admin" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Dashboard" IconColor="Color.Error">Admin Dashboard</MudNavLink>
                 <MudNavLink Href="/admin/products/new" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.AddBox" IconColor="Color.Error">New Product</MudNavLink>
                 <MudNavLink Href="/admin/homepage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Settings" IconColor="Color.Error">Homepage Settings</MudNavLink>
+                <MudNavLink Href="/admin/messages" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Message" IconColor="Color.Error">Contact Messages</MudNavLink>
             </AuthorizeView>
             <MudNavLink Href="account/profile" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.AccountCircle" IconColor="Color.Primary">Profile</MudNavLink>
             <MudNavLink Href="/api/auth/logout" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.ExitToApp" IconColor="Color.Dark">Logout</MudNavLink>

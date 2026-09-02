@@ -34,6 +34,7 @@ builder.Services.AddScoped<IErrorLoggerService, ErrorLoggerService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICheckoutService, CheckoutService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IContactMessageService, ContactMessageService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

@@ -1,0 +1,110 @@
+@page "/contactus"
+@using wowmenfashions.Models
+@using wowmenfashions.Services
+@inject IContactMessageService ContactMessageService
+@inject ISnackbar Snackbar
+
+<PageTitle>Contact Us - WOWMEN FASHIONS</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-16 mb-16 px-4 px-md-16">
+    <MudGrid Spacing="6">
+        <!-- Left Column: Leave A Comment -->
+        <MudItem xs="12" md="6">
+            <MudText Typo="Typo.h4" Class="fw-bold mb-6">Leave A Comment</MudText>
+            
+            <EditForm Model="@_contactMessage" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                
+                <MudGrid Spacing="3">
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="_contactMessage.Name" For="@(() => _contactMessage.Name)" 
+                                      Placeholder="Name" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="_contactMessage.Email" For="@(() => _contactMessage.Email)" 
+                                      Placeholder="Email" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="_contactMessage.Subject" For="@(() => _contactMessage.Subject)" 
+                                      Placeholder="Subject" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="_contactMessage.Message" For="@(() => _contactMessage.Message)" 
+                                      Placeholder="Leave a Message .." Variant="Variant.Outlined" Lines="6" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="mt-2 px-8 py-3 rounded-0" DropShadow="false">
+                            SUBMIT
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+            </EditForm>
+        </MudItem>
+
+        <!-- Right Column: Information -->
+        <MudItem xs="12" md="6">
+            <MudText Typo="Typo.h4" Class="fw-bold mb-4">Information About Wowmen</MudText>
+            
+            <MudText Typo="Typo.h6" Class="fw-bold mb-4">Best Place to buy Leather bags for Women and Men.,</MudText>
+            
+            <MudText Typo="Typo.body1" Class="mb-4 text-muted" Style="line-height: 1.8;">
+                WOWMEN Fashions, a beacon of sophistication, is a leading Luxury Leather Bags Manufacturing Company.
+            </MudText>
+            
+            <MudText Typo="Typo.body1" Class="mb-8 text-muted" Style="line-height: 1.8;">
+                As a brand committed to excellence, we redefine style through timeless designs and ethical practices.
+            </MudText>
+
+            <MudDivider Class="mb-6" />
+
+            <MudGrid Spacing="4">
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.h6" Class="fw-bold mb-4">USA – OFFICE</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-1 text-muted">WOWMEN FASHIONS LLC</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-1 text-muted">224 W 35th ST</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-1 text-muted">STE 500 PMB1010</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-4 text-muted">NEW YORK, NY-10001</MudText>
+                    
+                    <MudText Typo="Typo.body2" Class="mb-2 text-muted">T: (607)-678-2332</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-4 text-muted">E: admin@wowmen.co.in</MudText>
+
+                    <MudLink Href="/" Color="Color.Warning" Typo="Typo.button" Class="fw-bold text-decoration-none" Style="letter-spacing: 1px; font-size: 0.8rem; border-bottom: 2px solid var(--mud-palette-warning);">
+                        GO TO WEBSITE
+                    </MudLink>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudText Typo="Typo.h6" Class="fw-bold mb-4">INDIA</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-1 text-muted">WOWMEN FASHIONS INDIA PRIVATE LIMITED,</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-1 text-muted">7/9 EAST MADA STREET KOVUR,</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-4 text-muted">CHENNAI – 600128 TAMIL NADU</MudText>
+                    
+                    <MudText Typo="Typo.body2" Class="mb-2 text-muted">T: +91 – 9884999858</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-4 text-muted">E: admin@wowmen.co.in</MudText>
+                    
+                    <MudLink Href="/" Color="Color.Warning" Typo="Typo.button" Class="fw-bold text-decoration-none" Style="letter-spacing: 1px; font-size: 0.8rem; border-bottom: 2px solid var(--mud-palette-warning);">
+                        GO TO WEBSITE
+                    </MudLink>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private ContactMessage _contactMessage = new();
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            await ContactMessageService.CreateMessageAsync(_contactMessage);
+            Snackbar.Add("Your message has been sent successfully!", Severity.Success);
+            _contactMessage = new(); // Reset form
+        }
+        catch (Exception)
+        {
+            Snackbar.Add($"An error occurred while sending your message.", Severity.Error);
+        }
+    }
+}

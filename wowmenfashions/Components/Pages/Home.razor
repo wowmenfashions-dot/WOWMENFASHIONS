@@ -5,6 +5,15 @@
 
 <PageTitle>WOWMENFASHIONS - Premium Leather Bags & Wallets</PageTitle>
 
+<HeadContent>
+    <meta name="description" content="Discover premium leather bags, wallets, and accessories at WOWMENFASHIONS. Enjoy 1-year guarantee, free delivery in India, and RFID protected products." />
+    <meta name="keywords" content="leather bags, wallets, YKK zippers, RFID protection, WOWMENFASHIONS, men's fashion, women's fashion" />
+    <meta property="og:title" content="WOWMENFASHIONS - Premium Leather Bags & Wallets" />
+    <meta property="og:description" content="Discover premium leather bags, wallets, and accessories. Enjoy 1-year guarantee and free delivery." />
+    <meta property="og:image" content="logo.png" />
+</HeadContent>
+
+
 <div class="homepage-container pb-16">
     @if (!string.IsNullOrEmpty(AnnouncementText))
     {
@@ -20,126 +29,79 @@
         </ItemTemplate>
     </MudCarousel>
 
-    <!-- QUALITY OF PRODUCT SECTION -->
-    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-10 mb-10">
-        <MudText Typo="Typo.h5" Align="Align.Center" Class="fw-bold mb-8">QUALITY OF PRODUCT</MudText>
-        <MudGrid Spacing="4" Justify="Justify.Center">
-            <!-- YKK Zippers -->
-            <MudItem xs="12" md="4" Class="d-flex align-center">
-                <MudIcon Icon="@Icons.Material.Filled.Hardware" Size="Size.Large" Color="Color.Warning" Class="mr-4" Style="font-size: 3rem;" />
-                <MudText Typo="Typo.body2">
-                    <strong>We use Zippers from the YKK Brand</strong>, Which is a Global leader in Fastening accessories. So, we are able to provide the worlds best quality zippers in our every products.
-                </MudText>
+    <!-- TRUST BANNERS (Guarantee, Delivery, RFID, YKK, LWG) -->
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mb-10 py-4" Style="background-color: #f9f9f9; border-bottom: 1px solid #eee;">
+        <MudGrid Spacing="2" Justify="Justify.SpaceEvenly">
+            <!-- Guarantee -->
+            <MudItem xs="6" md="2" Class="d-flex align-center justify-center">
+                <MudIcon Icon="@Icons.Material.Filled.WorkspacePremium" Size="Size.Medium" Color="Color.Warning" Class="mr-2" />
+                <MudText Typo="Typo.body2" Class="fw-bold">1-Year Guarantee</MudText>
+            </MudItem>
+            <!-- Free Delivery -->
+            <MudItem xs="6" md="2" Class="d-flex align-center justify-center">
+                <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Size="Size.Medium" Color="Color.Error" Class="mr-2" />
+                <MudText Typo="Typo.body2" Class="fw-bold">Free Delivery</MudText>
+            </MudItem>
+            <!-- RFID -->
+            <MudItem xs="6" md="2" Class="d-flex align-center justify-center">
+                <MudIcon Icon="@Icons.Material.Filled.Security" Size="Size.Medium" Color="Color.Success" Class="mr-2" />
+                <MudText Typo="Typo.body2" Class="fw-bold">RFID Protected</MudText>
+            </MudItem>
+            <!-- YKK -->
+            <MudItem xs="6" md="2" Class="d-flex align-center justify-center">
+                <MudIcon Icon="@Icons.Material.Filled.Hardware" Size="Size.Medium" Color="Color.Dark" Class="mr-2" />
+                <MudText Typo="Typo.body2" Class="fw-bold">YKK Zippers</MudText>
             </MudItem>
             <!-- LWG -->
-            <MudItem xs="12" md="4" Class="d-flex align-center">
-                <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Size="Size.Large" Color="Color.Success" Class="mr-4" Style="font-size: 3rem;" />
-                <MudText Typo="Typo.body2">
-                    Our Leather Suppliers are Member of <strong>Leather Working Group</strong> and holding Silver and Gold LWG Certification. Their Leather Processing methods are bounded to US Standards.
-                </MudText>
+            <MudItem xs="6" md="2" Class="d-flex align-center justify-center">
+                <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Size="Size.Medium" Color="Color.Primary" Class="mr-2" />
+                <MudText Typo="Typo.body2" Class="fw-bold">LWG Certified</MudText>
             </MudItem>
-            <!-- Eco-Friendly Accessories -->
-            <MudItem xs="12" md="4" Class="d-flex align-center">
-                <MudIcon Icon="@Icons.Material.Filled.Nature" Size="Size.Large" Color="Color.Primary" Class="mr-4" Style="font-size: 3rem;" />
+        </MudGrid>
+    </MudContainer>
+
+    <!-- QUALITY OF PRODUCT SECTION -->
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mb-16 mt-8 px-4">
+        <MudText Typo="Typo.h5" Align="Align.Center" Class="fw-bold mb-10 text-uppercase" Style="letter-spacing: 2px;">Quality of Product</MudText>
+        
+        <MudGrid Spacing="6" Justify="Justify.Center">
+            <!-- YKK Zippers -->
+            <MudItem xs="12" md="4" Class="d-flex align-start">
+                <MudIcon Icon="@Icons.Material.Filled.Hardware" Size="Size.Large" Color="Color.Dark" Class="mr-4 mt-1" Style="font-size: 3rem;" />
                 <div>
-                    <MudText Typo="Typo.body2" Class="mb-1">• Accessories we use on our products are Eco-friendly, Nickle&Lead free and BV certified.</MudText>
-                    <MudText Typo="Typo.body2">• Accessories are long lasting on color and rust.</MudText>
+                    <MudText Typo="Typo.h6" Class="fw-bold mb-2">YKK Zippers</MudText>
+                    <MudText Typo="Typo.body2" Class="text-muted" Style="line-height: 1.6;">
+                        We use Zippers from the YKK Brand, Which is a Global leader in Fastening accessories. So, we are able to provide the worlds best quality zippers in our every products.
+                    </MudText>
+                </div>
+            </MudItem>
+
+            <!-- LWG Certification -->
+            <MudItem xs="12" md="4" Class="d-flex align-start">
+                <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Size="Size.Large" Color="Color.Success" Class="mr-4 mt-1" Style="font-size: 3rem;" />
+                <div>
+                    <MudText Typo="Typo.h6" Class="fw-bold mb-2">Leather Working Group</MudText>
+                    <MudText Typo="Typo.body2" Class="text-muted" Style="line-height: 1.6;">
+                        Our Leather Suppliers are Member of Leather Working Group and holding Silver and Gold LWG Certification. Their Leather Processing methods are bounded to US Standards.
+                    </MudText>
+                </div>
+            </MudItem>
+
+            <!-- Hardware/Accessories -->
+            <MudItem xs="12" md="4" Class="d-flex align-start">
+                <MudIcon Icon="@Icons.Material.Filled.Build" Size="Size.Large" Color="Color.Warning" Class="mr-4 mt-1" Style="font-size: 3rem;" />
+                <div>
+                    <MudText Typo="Typo.h6" Class="fw-bold mb-2">Premium Accessories</MudText>
+                    <ul class="text-muted ps-4 mb-0" style="line-height: 1.6; font-size: 0.875rem;">
+                        <li class="mb-2">Accessories we use on our products are Eco-friendly, Nickle&Lead free and BV certified.</li>
+                        <li>Accessories are long lasting on color and rust</li>
+                    </ul>
                 </div>
             </MudItem>
         </MudGrid>
     </MudContainer>
 
-    <!-- PRODUCT OF THE MONTH PROMO -->
-    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mb-10">
-        <MudPaper Elevation="3" Class="promo-banner pa-0 overflow-hidden border-solid border-2 border-dark rounded-xl" Style="border-color: #000; position: relative; display: flex; flex-wrap: wrap;">
-            <!-- Left Image Side -->
-            <div class="promo-image-container d-flex justify-center align-center pa-8" style="flex: 1 1 50%; min-width: 300px; background-color: #f8f9fa; position: relative;">
-                <MudIcon Icon="@Icons.Material.Filled.AccountBalanceWallet" Style="font-size: 200px; color: #a12c32;" />
-                <div class="discount-badge">
-                    <div class="text-center">
-                        <MudText Typo="Typo.h6" Class="fw-bold lh-1 text-white">FLAT</MudText>
-                        <MudText Typo="Typo.h3" Class="fw-bold lh-1 text-white">33%</MudText>
-                        <MudText Typo="Typo.h6" Class="fw-bold lh-1 text-white">OFF</MudText>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Right Content Side -->
-            <div class="promo-content-container d-flex flex-column justify-center align-end pa-8 text-right" style="flex: 1 1 50%; min-width: 300px; background-color: #fff;">
-                <MudText Typo="Typo.subtitle1" Class="mb-2 fw-bold" Style="letter-spacing: 2px;">April - 2024</MudText>
-                <MudText Typo="Typo.h5" Class="mb-1" Style="font-family: 'Brush Script MT', cursive; font-style: italic;">Product Of the Month</MudText>
-                <MudText Typo="Typo.h3" Class="fw-bold mb-4 lh-1" Style="font-weight: 900;">ZIP AROUND WALLET<br/>FOR WOMEN</MudText>
-                <MudText Typo="Typo.body1" Class="mb-6" Style="max-width: 400px;">Transforming every moment into a 'wow' moment, where style meets the extraordinary.</MudText>
-                
-                <div class="d-flex align-center justify-end mb-6">
-                    <MudText Typo="Typo.h5" Class="text-decoration-line-through me-4" Style="color: #666;">₹1500</MudText>
-                    <div class="price-badge">
-                        <MudText Typo="Typo.h4" Class="fw-bold text-white mb-0">1000/-</MudText>
-                        <MudText Typo="Typo.subtitle2" Class="text-white text-center">INR</MudText>
-                    </div>
-                </div>
-                
-                <MudButton Variant="Variant.Filled" Color="Color.Dark" Size="Size.Large" Class="rounded-pill px-8 py-2" @onclick='@(() => NavigationManager.NavigateTo("/category/womens"))'>SHOP NOW</MudButton>
-            </div>
-            
-            <div class="vertical-text">Product Of Month April</div>
-        </MudPaper>
-    </MudContainer>
-
-    <!-- 3 IMAGE GALLERY -->
-    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mb-10">
-        <MudGrid Spacing="2">
-            <MudItem xs="12" md="4">
-                <div class="gallery-image bg-light d-flex justify-center align-center" style="height: 300px; border: 4px solid #f1ebd8;">
-                    <MudIcon Icon="@Icons.Material.Filled.ShoppingBag" Style="font-size: 150px; color: #555;" />
-                </div>
-            </MudItem>
-            <MudItem xs="12" md="4">
-                <div class="gallery-image d-flex justify-center align-center" style="height: 300px; background-color: #f48fb1; border: 4px solid #f1ebd8;">
-                    <MudIcon Icon="@Icons.Material.Filled.ShoppingBag" Style="font-size: 150px; color: #c2185b;" />
-                </div>
-            </MudItem>
-            <MudItem xs="12" md="4">
-                <div class="gallery-image bg-light d-flex justify-center align-center" style="height: 300px; border: 4px solid #f1ebd8;">
-                    <MudIcon Icon="@Icons.Material.Filled.ShoppingBag" Style="font-size: 150px; color: #a12c32;" />
-                </div>
-            </MudItem>
-        </MudGrid>
-    </MudContainer>
-
-    <!-- RFID PROTECTION BANNER -->
-    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mb-10">
-        <MudPaper Elevation="0" Class="rfid-banner d-flex flex-wrap pa-8 align-center justify-space-between" Style="border: 6px dotted #000;">
-            <div style="flex: 1 1 50%; min-width: 300px;">
-                <MudText Typo="Typo.h3" Class="fw-bold mb-2 lh-1" Style="font-family: 'Brush Script MT', cursive;">Safety for Your<br/>Credit and Debit Cards</MudText>
-                <MudText Typo="Typo.subtitle1" Class="mb-8" Style="color: #555;">Safety Feature</MudText>
-                <MudText Typo="Typo.h1" Class="fw-bold lh-1" Style="font-weight: 900; letter-spacing: -2px;">RFID<br/>PROTECTION</MudText>
-                <MudText Typo="Typo.h5" Class="fw-bold" Style="letter-spacing: 2px;">ON ALL WALLETS</MudText>
-            </div>
-            <div class="d-flex justify-center align-center" style="flex: 1 1 50%; min-width: 300px;">
-                <MudIcon Icon="@Icons.Material.Filled.Contactless" Style="font-size: 150px; color: #000;" />
-                <MudIcon Icon="@Icons.Material.Filled.Security" Style="font-size: 150px; color: #000;" />
-            </div>
-        </MudPaper>
-    </MudContainer>
-
-    <!-- FREE DELIVERY BANNER -->
-    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mb-10">
-        <MudPaper Elevation="3" Class="free-delivery-banner overflow-hidden d-flex flex-wrap align-center" Style="background-color: #e6e6e6; position: relative;">
-            <div class="pa-10" style="flex: 1 1 50%; min-width: 300px; z-index: 2;">
-                <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Style="font-size: 200px; color: #d32f2f;" />
-            </div>
-            <div class="pa-10" style="flex: 1 1 50%; min-width: 300px; z-index: 2;">
-                <MudText Typo="Typo.subtitle1" Class="text-right mb-4">WOWMEN FASHIONS</MudText>
-                <MudText Typo="Typo.h2" Class="fw-bold lh-1 text-right mb-4" Style="font-weight: 900;">Free Delivery<br/>On All Orders</MudText>
-                <MudText Typo="Typo.h5" Class="text-right mb-8">Wow delivery, no extra cost!</MudText>
-                
-                <div class="bg-dark text-white pa-4 text-right">
-                    <MudText>Free delivery throughout India in 3 days.</MudText>
-                </div>
-            </div>
-        </MudPaper>
-    </MudContainer>
+    <!-- Removed old large banners, now consolidated at the top -->
 </div>
 
 @code {

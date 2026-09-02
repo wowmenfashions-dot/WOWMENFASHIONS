@@ -1,0 +1,125 @@
+@page "/admin/messages"
+@using wowmenfashions.Models
+@using wowmenfashions.Services
+@inject IContactMessageService ContactMessageService
+@inject ISnackbar Snackbar
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+
+<PageTitle>Contact Messages - Admin Dashboard</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-8 mb-16">
+    <MudText Typo="Typo.h3" Class="fw-bold mb-6">Contact Messages</MudText>
+
+    @if (_isLoading)
+    {
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    }
+    else
+    {
+        <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" Class="pa-6">
+            <!-- Unread Messages Tab -->
+            <MudTabPanel Text="Unread Messages" BadgeData="@_unreadMessages.Count" BadgeColor="Color.Error">
+                @if (!_unreadMessages.Any())
+                {
+                    <MudText Typo="Typo.body1" Class="text-muted">No unread messages.</MudText>
+                }
+                else
+                {
+                    <MudTable Items="@_unreadMessages" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0">
+                        <HeaderContent>
+                            <MudTh>Date</MudTh>
+                            <MudTh>Name</MudTh>
+                            <MudTh>Email</MudTh>
+                            <MudTh>Subject</MudTh>
+                            <MudTh>Message</MudTh>
+                            <MudTh>Actions</MudTh>
+                        </HeaderContent>
+                        <RowTemplate Context="msg">
+                            <MudTd DataLabel="Date">@msg.CreatedAt.ToString("g")</MudTd>
+                            <MudTd DataLabel="Name" Style="max-width: 150px; white-space: normal; word-wrap: break-word; word-break: break-all;">@msg.Name</MudTd>
+                            <MudTd DataLabel="Email"><MudLink Href="@($"mailto:{msg.Email}")">@msg.Email</MudLink></MudTd>
+                            <MudTd DataLabel="Subject" Style="max-width: 200px; white-space: normal; word-wrap: break-word; word-break: break-all;">@msg.Subject</MudTd>
+                            <MudTd DataLabel="Message" Style="max-width: 300px; white-space: normal; word-break: break-all;">@msg.Message</MudTd>
+                            <MudTd DataLabel="Actions">
+                                <MudButton Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary" OnClick="@(() => MarkAsRead(msg.Id))">
+                                    Mark as Read
+                                </MudButton>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+            </MudTabPanel>
+
+            <!-- Read Messages Tab -->
+            <MudTabPanel Text="Read Messages">
+                @if (!_readMessages.Any())
+                {
+                    <MudText Typo="Typo.body1" Class="text-muted">No read messages.</MudText>
+                }
+                else
+                {
+                    <MudTable Items="@_readMessages" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0">
+                        <HeaderContent>
+                            <MudTh>Date</MudTh>
+                            <MudTh>Name</MudTh>
+                            <MudTh>Email</MudTh>
+                            <MudTh>Subject</MudTh>
+                            <MudTh>Message</MudTh>
+                        </HeaderContent>
+                        <RowTemplate Context="msg">
+                            <MudTd DataLabel="Date">@msg.CreatedAt.ToString("g")</MudTd>
+                            <MudTd DataLabel="Name" Style="max-width: 150px; white-space: normal; word-wrap: break-word; word-break: break-all;">@msg.Name</MudTd>
+                            <MudTd DataLabel="Email"><MudLink Href="@($"mailto:{msg.Email}")">@msg.Email</MudLink></MudTd>
+                            <MudTd DataLabel="Subject" Style="max-width: 200px; white-space: normal; word-wrap: break-word; word-break: break-all;">@msg.Subject</MudTd>
+                            <MudTd DataLabel="Message" Style="max-width: 400px; white-space: normal; word-break: break-all;">@msg.Message</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+            </MudTabPanel>
+        </MudTabs>
+    }
+</MudContainer>
+
+@code {
+    private bool _isLoading = true;
+    private List<ContactMessage> _unreadMessages = new();
+    private List<ContactMessage> _readMessages = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMessages();
+    }
+
+    private async Task LoadMessages()
+    {
+        _isLoading = true;
+        try
+        {
+            var allMessages = await ContactMessageService.GetAllMessagesAsync();
+            _unreadMessages = allMessages.Where(m => !m.IsRead).ToList();
+            _readMessages = allMessages.Where(m => m.IsRead).ToList();
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("Error loading messages.", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task MarkAsRead(int id)
+    {
+        try
+        {
+            await ContactMessageService.MarkAsReadAsync(id);
+            Snackbar.Add("Message marked as read.", Severity.Success);
+            await LoadMessages();
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("Error updating message.", Severity.Error);
+        }
+    }
+}

@@ -2,7 +2,7 @@
 @inject ICartService CartService
 
 <div class="mr-4 mt-1">
-    <MudBadge Content="_itemCount" Color="Color.Error" Overlap="true" Origin="Origin.BottomRight" Visible="@(_itemCount > 0)">
+    <MudBadge Content="_itemCount" Color="Color.Error" Overlap="true" Origin="Origin.TopRight" Visible="@(_itemCount > 0)" Class="mr-2 mt-2">
         <MudIconButton Href="/cart" Icon="@Icons.Material.Filled.ShoppingCart" Color="Color.Inherit" />
     </MudBadge>
 </div>
