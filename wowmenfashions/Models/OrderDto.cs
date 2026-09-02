@@ -12,7 +12,10 @@ namespace wowmenfashions.Models
         public decimal TaxAmount { get; set; }
         public decimal DiscountAmount { get; set; }
         public decimal TotalAmount { get; set; }
-        public string Status { get; set; } = "PaymentCompleted";
+        public string Status { get; set; } = "Pending";
+        public string? RazorpayOrderId { get; set; }
+        public string? RazorpayPaymentId { get; set; }
+        public string PaymentStatus { get; set; } = "Pending";
         public string CustomerName { get; set; } = string.Empty;
         public string CustomerEmail { get; set; } = string.Empty;
         public string ShippingAddress { get; set; } = string.Empty;

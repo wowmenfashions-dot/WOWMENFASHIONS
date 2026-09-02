@@ -1,6 +1,9 @@
 @page "/admin/login"
 @inject NavigationManager Navigation
 @using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.AspNetCore.Authorization
+@attribute [AllowAnonymous]
+@attribute [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("AdminLoginLimiter")]
 
 <PageTitle>Login - Admin</PageTitle>
 

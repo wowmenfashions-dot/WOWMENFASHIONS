@@ -17,11 +17,13 @@ namespace wowmenfashions.Services
     public class CheckoutService : ICheckoutService
     {
         private readonly string _connectionString;
+        private readonly IEncryptionService _encryptionService;
 
-        public CheckoutService(IConfiguration configuration)
+        public CheckoutService(IConfiguration configuration, IEncryptionService encryptionService)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection") 
                 ?? throw new InvalidOperationException("DefaultConnection string not found.");
+            _encryptionService = encryptionService;
         }
 
         public async Task<int> PlaceOrderAsync(OrderDto order)
@@ -41,7 +43,10 @@ namespace wowmenfashions.Services
                 p.Add("@Status", order.Status);
                 p.Add("@CustomerName", order.CustomerName);
                 p.Add("@CustomerEmail", order.CustomerEmail);
-                p.Add("@ShippingAddress", order.ShippingAddress);
+                p.Add("@ShippingAddress", _encryptionService.Encrypt(order.ShippingAddress));
+                p.Add("@RazorpayOrderId", order.RazorpayOrderId);
+                p.Add("@RazorpayPaymentId", order.RazorpayPaymentId);
+                p.Add("@PaymentStatus", order.PaymentStatus);
                 p.Add("@OrderId", dbType: DbType.Int32, direction: ParameterDirection.Output);
 
                 await connection.ExecuteAsync(

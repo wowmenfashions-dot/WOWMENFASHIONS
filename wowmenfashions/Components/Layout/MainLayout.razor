@@ -52,11 +52,25 @@
     {
         base.OnInitialized();
 
-        _theme = new()
+        _theme = new MudTheme
         {
             PaletteLight = _lightPalette,
             PaletteDark = _darkPalette,
             LayoutProperties = new LayoutProperties()
+            {
+                DefaultBorderRadius = "8px",
+            },
+            Typography = new Typography()
+            {
+                Default = { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" } },
+                H1 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" } },
+                H2 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" } },
+                H3 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" } },
+                H4 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" } },
+                H5 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" } },
+                H6 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" } },
+                Button = { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" }, TextTransform = "none" }
+            }
         };
     }
 

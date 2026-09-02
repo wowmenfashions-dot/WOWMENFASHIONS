@@ -7,6 +7,7 @@
     <MudNavLink Href="/category/toddler" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.ChildFriendly" IconColor="Color.Warning">Toddler</MudNavLink>
     <MudNavLink Href="/aboutus" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Info" IconColor="Color.Info">About Us</MudNavLink>
     <MudNavLink Href="/contactus" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.ContactPage" IconColor="Color.Default">Contact Us</MudNavLink>
+    <MudNavLink Href="/terms" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Gavel" IconColor="Color.Default">Terms & Conditions</MudNavLink>
     <AuthorizeView>
         <Authorized>
             <AuthorizeView Roles="Admin" Context="adminContext">
@@ -14,6 +15,7 @@
                 <MudNavLink Href="/admin/products/new" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.AddBox" IconColor="Color.Error">New Product</MudNavLink>
                 <MudNavLink Href="/admin/homepage" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Settings" IconColor="Color.Error">Homepage Settings</MudNavLink>
                 <MudNavLink Href="/admin/messages" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Message" IconColor="Color.Error">Contact Messages</MudNavLink>
+                <MudNavLink Href="/admin/pages" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Article" IconColor="Color.Error">Edit Pages</MudNavLink>
             </AuthorizeView>
             <MudNavLink Href="account/profile" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.AccountCircle" IconColor="Color.Primary">Profile</MudNavLink>
             <MudNavLink Href="/api/auth/logout" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.ExitToApp" IconColor="Color.Dark">Logout</MudNavLink>

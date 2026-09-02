@@ -2,6 +2,7 @@
 @using wowmenfashions.Models
 @using wowmenfashions.Services
 @inject IContactMessageService ContactMessageService
+@inject IPageContentService PageContentService
 @inject ISnackbar Snackbar
 
 <PageTitle>Contact Us - WOWMEN FASHIONS</PageTitle>
@@ -33,8 +34,8 @@
                                       Placeholder="Leave a Message .." Variant="Variant.Outlined" Lines="6" Margin="Margin.Dense" />
                     </MudItem>
                     <MudItem xs="12">
-                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="mt-2 px-8 py-3 rounded-0" DropShadow="false">
-                            SUBMIT
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Dark" Class="mt-2 px-8 py-3 rounded-0" DropShadow="false" Disabled="_isSubmitting">
+                            @( _isSubmitting ? "SUBMITTING..." : "SUBMIT")
                         </MudButton>
                     </MudItem>
                 </MudGrid>
@@ -42,62 +43,63 @@
         </MudItem>
 
         <!-- Right Column: Information -->
-        <MudItem xs="12" md="6">
-            <MudText Typo="Typo.h4" Class="fw-bold mb-4">Information About Wowmen</MudText>
+        <MudItem xs="12" md="6" Class="d-flex flex-column justify-center pa-8" Style="background-color: #f7f7f7;">
+            <MudText Typo="Typo.h4" Class="fw-bold mb-6">Information About Wowmen</MudText>
             
-            <MudText Typo="Typo.h6" Class="fw-bold mb-4">Best Place to buy Leather bags for Women and Men.,</MudText>
-            
-            <MudText Typo="Typo.body1" Class="mb-4 text-muted" Style="line-height: 1.8;">
-                WOWMEN Fashions, a beacon of sophistication, is a leading Luxury Leather Bags Manufacturing Company.
-            </MudText>
-            
-            <MudText Typo="Typo.body1" Class="mb-8 text-muted" Style="line-height: 1.8;">
-                As a brand committed to excellence, we redefine style through timeless designs and ethical practices.
-            </MudText>
-
-            <MudDivider Class="mb-6" />
-
-            <MudGrid Spacing="4">
-                <MudItem xs="12" sm="6">
-                    <MudText Typo="Typo.h6" Class="fw-bold mb-4">USA – OFFICE</MudText>
-                    <MudText Typo="Typo.body2" Class="mb-1 text-muted">WOWMEN FASHIONS LLC</MudText>
-                    <MudText Typo="Typo.body2" Class="mb-1 text-muted">224 W 35th ST</MudText>
-                    <MudText Typo="Typo.body2" Class="mb-1 text-muted">STE 500 PMB1010</MudText>
-                    <MudText Typo="Typo.body2" Class="mb-4 text-muted">NEW YORK, NY-10001</MudText>
-                    
-                    <MudText Typo="Typo.body2" Class="mb-2 text-muted">T: (607)-678-2332</MudText>
-                    <MudText Typo="Typo.body2" Class="mb-4 text-muted">E: admin@wowmen.co.in</MudText>
-
-                    <MudLink Href="/" Color="Color.Warning" Typo="Typo.button" Class="fw-bold text-decoration-none" Style="letter-spacing: 1px; font-size: 0.8rem; border-bottom: 2px solid var(--mud-palette-warning);">
-                        GO TO WEBSITE
-                    </MudLink>
-                </MudItem>
-
-                <MudItem xs="12" sm="6">
-                    <MudText Typo="Typo.h6" Class="fw-bold mb-4">INDIA</MudText>
-                    <MudText Typo="Typo.body2" Class="mb-1 text-muted">WOWMEN FASHIONS INDIA PRIVATE LIMITED,</MudText>
-                    <MudText Typo="Typo.body2" Class="mb-1 text-muted">7/9 EAST MADA STREET KOVUR,</MudText>
-                    <MudText Typo="Typo.body2" Class="mb-4 text-muted">CHENNAI – 600128 TAMIL NADU</MudText>
-                    
-                    <MudText Typo="Typo.body2" Class="mb-2 text-muted">T: +91 – 9884999858</MudText>
-                    <MudText Typo="Typo.body2" Class="mb-4 text-muted">E: admin@wowmen.co.in</MudText>
-                    
-                    <MudLink Href="/" Color="Color.Warning" Typo="Typo.button" Class="fw-bold text-decoration-none" Style="letter-spacing: 1px; font-size: 0.8rem; border-bottom: 2px solid var(--mud-palette-warning);">
-                        GO TO WEBSITE
-                    </MudLink>
-                </MudItem>
-            </MudGrid>
+            @if (_isLoadingContent)
+            {
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+            }
+            else if (!string.IsNullOrEmpty(_contentHtml))
+            {
+                @((MarkupString)_contentHtml)
+            }
+            else
+            {
+                <MudText Typo="Typo.body1" Class="mb-6 text-muted" Style="line-height: 1.8;">
+                    At WOWMEN Fashions, we value your connection and eagerly await the opportunity to assist you.
+                    Whether you have inquiries about our premium leather collections, need help with an order, or
+                    want to share your experiences, our dedicated team is here for you. Reach out through our contact
+                    form, drop us an email, or connect with us on social media. Your satisfaction is our priority, and
+                    we look forward to providing you with the exceptional service that matches the quality of our
+                    luxurious products. Elevate your experience with WOWMEN Fashions – where style meets unparalleled
+                    customer care.
+                </MudText>
+                
+                <MudList T="string" Class="bg-transparent mt-4">
+                    <MudListItem Icon="@Icons.Material.Filled.Phone" IconColor="Color.Dark">
+                        <MudText Typo="Typo.body1" Class="fw-bold">+91 9159933355</MudText>
+                    </MudListItem>
+                    <MudListItem Icon="@Icons.Material.Filled.Email" IconColor="Color.Dark">
+                        <MudText Typo="Typo.body1" Class="fw-bold">
+                            <MudLink Href="mailto:info@wowmenfashions.com" Color="Color.Dark">info@wowmenfashions.com</MudLink>
+                        </MudText>
+                    </MudListItem>
+                </MudList>
+            }
         </MudItem>
     </MudGrid>
 </MudContainer>
 
 @code {
     private ContactMessage _contactMessage = new();
+    private bool _isSubmitting = false;
+    
+    private string _contentHtml = string.Empty;
+    private bool _isLoadingContent = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var content = await PageContentService.GetContentByNameAsync("ContactUs");
+        _contentHtml = content?.ContentHtml ?? string.Empty;
+        _isLoadingContent = false;
+    }
 
     private async Task HandleValidSubmit()
     {
         try
         {
+            _isSubmitting = true;
             await ContactMessageService.CreateMessageAsync(_contactMessage);
             Snackbar.Add("Your message has been sent successfully!", Severity.Success);
             _contactMessage = new(); // Reset form

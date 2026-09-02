@@ -1,0 +1,64 @@
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<div class="quill-editor-container" style="background: white; color: black; border-radius: 4px;">
+    <div id="@EditorId" style="min-height: @(MinHeight); border: 1px solid #ccc; border-top: none;"></div>
+</div>
+
+@code {
+    [Parameter]
+    public string Content { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> ContentChanged { get; set; }
+
+    [Parameter]
+    public string MinHeight { get; set; } = "200px";
+
+    private string EditorId { get; set; } = $"quill-{Guid.NewGuid():N}";
+    private DotNetObjectReference<QuillEditor>? _objRef;
+    private bool _isInitialized;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _objRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("window.quillInterop.init", EditorId, _objRef, Content);
+            _isInitialized = true;
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_isInitialized)
+        {
+            var currentHtml = await JSRuntime.InvokeAsync<string>("window.quillInterop.getHtml", EditorId);
+            if (currentHtml != Content && !string.IsNullOrEmpty(Content))
+            {
+                // Only update if Content has changed externally
+                // This prevents cursor jumping when typing
+                if (currentHtml == "<p><br></p>" || string.IsNullOrEmpty(currentHtml))
+                {
+                     await JSRuntime.InvokeVoidAsync("window.quillInterop.setHtml", EditorId, Content);
+                }
+            }
+        }
+    }
+
+    [JSInvokable]
+    public Task UpdateContent(string html)
+    {
+        Content = html;
+        return ContentChanged.InvokeAsync(html);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_objRef != null)
+        {
+            _objRef.Dispose();
+        }
+        await Task.CompletedTask;
+    }
+}

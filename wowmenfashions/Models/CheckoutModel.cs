@@ -24,17 +24,5 @@ namespace wowmenfashions.Models
 
         [Required(ErrorMessage = "Country is required")]
         public string Country { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Card Number is required")]
-        [RegularExpression(@"^\d{16}$", ErrorMessage = "Card number must be 16 digits")]
-        public string CardNumber { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Expiry Date is required")]
-        [RegularExpression(@"^(0[1-9]|1[0-2])\/\d{2}$", ErrorMessage = "Expiry must be in MM/YY format")]
-        public string ExpiryDate { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "CVV is required")]
-        [RegularExpression(@"^\d{3,4}$", ErrorMessage = "CVV must be 3 or 4 digits")]
-        public string Cvv { get; set; } = string.Empty;
     }
 }

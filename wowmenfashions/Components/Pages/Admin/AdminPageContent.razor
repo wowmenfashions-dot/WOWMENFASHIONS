@@ -1,0 +1,90 @@
+@page "/admin/pages"
+@using wowmenfashions.Services
+@using wowmenfashions.Components.Shared
+@inject IPageContentService PageContentService
+@inject ISnackbar Snackbar
+
+<PageTitle>Edit Pages - Admin Dashboard</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <MudText Typo="Typo.h4" Class="fw-bold mb-6">Manage Dynamic Pages</MudText>
+
+    <ErrorBoundary>
+        <ErrorContent>
+            <MudAlert Severity="Severity.Error">@context.Message</MudAlert>
+            <pre>@context.StackTrace</pre>
+        </ErrorContent>
+        <ChildContent>
+
+    <MudPaper Class="pa-6" Elevation="2">
+        <MudSelect T="string" Label="Select Page" Variant="Variant.Outlined" Value="_selectedPage" ValueChanged="OnPageSelected" Class="mb-6">
+            <MudSelectItem Value="@("AboutUs")">About Us</MudSelectItem>
+            <MudSelectItem Value="@("ContactUs")">Contact Us</MudSelectItem>
+            <MudSelectItem Value="@("Terms")">Terms & Conditions</MudSelectItem>
+        </MudSelect>
+
+        @if (_isLoading)
+        {
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Class="mt-4" />
+        }
+        else if (!string.IsNullOrEmpty(_selectedPage))
+        {
+            <div class="mb-6">
+                <MudText Typo="Typo.subtitle2" Class="mb-2">HTML Content</MudText>
+                <QuillEditor @bind-Content="_contentHtml" MinHeight="400px" />
+            </div>
+            
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveContent">Save Content</MudButton>
+        }
+    </MudPaper>
+        </ChildContent>
+    </ErrorBoundary>
+</MudContainer>
+
+@code {
+    private string _selectedPage = string.Empty;
+    private string _contentHtml = string.Empty;
+    private bool _isLoading = false;
+
+    private async Task OnPageSelected(string value)
+    {
+        _selectedPage = value;
+        if (!string.IsNullOrEmpty(_selectedPage))
+        {
+            await LoadPageContent();
+        }
+    }
+
+    private async Task LoadPageContent()
+    {
+        _isLoading = true;
+        try
+        {
+            var pageData = await PageContentService.GetContentByNameAsync(_selectedPage);
+            _contentHtml = pageData?.ContentHtml ?? string.Empty;
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("Error loading page content.", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task SaveContent()
+    {
+        if (string.IsNullOrEmpty(_selectedPage)) return;
+
+        try
+        {
+            await PageContentService.UpdateContentAsync(_selectedPage, _contentHtml);
+            Snackbar.Add($"{_selectedPage} content saved successfully!", Severity.Success);
+        }
+        catch (Exception)
+        {
+            Snackbar.Add("Error saving page content.", Severity.Error);
+        }
+    }
+}

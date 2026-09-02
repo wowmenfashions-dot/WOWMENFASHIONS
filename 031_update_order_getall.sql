@@ -1,3 +1,6 @@
+USE wowmenfashions;
+GO
+
 CREATE OR ALTER PROCEDURE [dbo].[Order_GetAll]
 AS
 BEGIN

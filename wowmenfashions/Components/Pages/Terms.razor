@@ -1,0 +1,36 @@
+@page "/terms"
+@using wowmenfashions.Services
+@inject IPageContentService PageContentService
+
+<PageTitle>Terms and Conditions - WOWMENFASHIONS</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-16">
+    <MudText Typo="Typo.h3" Class="fw-bold mb-6 text-center" Style="font-family: 'Inter', sans-serif;">Legal & Terms of Service</MudText>
+    
+    <MudPaper Elevation="0" Class="pa-6 pa-md-10 rounded-lg" Style="border: 1px solid var(--mud-palette-lines-default);">
+        @if (_isLoading)
+        {
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Class="d-block mx-auto mt-8" />
+        }
+        else if (!string.IsNullOrEmpty(_contentHtml))
+        {
+            @((MarkupString)_contentHtml)
+        }
+        else
+        {
+            <MudText Typo="Typo.body2" Class="text-muted text-center">Terms and conditions content is currently unavailable.</MudText>
+        }
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private string _contentHtml = string.Empty;
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var content = await PageContentService.GetContentByNameAsync("Terms");
+        _contentHtml = content?.ContentHtml ?? string.Empty;
+        _isLoading = false;
+    }
+}

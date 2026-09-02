@@ -6,6 +6,7 @@ using Microsoft.Extensions.Caching.Memory;
 using wowmenfashions.Models;
 using wowmenfashions.Data;
 using Dapper;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace wowmenfashions.Services;
 
@@ -13,12 +14,32 @@ public class ProductService : IProductService
 {
     private readonly ISqlConnectionFactory _sqlConnectionFactory;
     private readonly IMemoryCache _cache;
+    private readonly AuthenticationStateProvider _authStateProvider;
+    private readonly IAdminAuditService _auditService;
     private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(15);
 
-    public ProductService(ISqlConnectionFactory sqlConnectionFactory, IMemoryCache cache)
+    public ProductService(ISqlConnectionFactory sqlConnectionFactory, IMemoryCache cache, AuthenticationStateProvider authStateProvider, IAdminAuditService auditService)
     {
         _sqlConnectionFactory = sqlConnectionFactory;
         _cache = cache;
+        _authStateProvider = authStateProvider;
+        _auditService = auditService;
+    }
+
+    private async Task VerifyAdminAsync()
+    {
+        var authState = await _authStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (!user.Identity?.IsAuthenticated ?? true || !user.IsInRole("Admin"))
+        {
+            throw new UnauthorizedAccessException("Only administrators can perform this action.");
+        }
+    }
+
+    private async Task<string> GetAdminEmailAsync()
+    {
+        var authState = await _authStateProvider.GetAuthenticationStateAsync();
+        return authState.User.Identity?.Name ?? "Unknown";
     }
 
     private async Task<IEnumerable<CategoryDto>> GetAllCategoriesAsync()
@@ -133,6 +154,9 @@ public class ProductService : IProductService
 
     public async Task<ProductDto> CreateProductAsync(ProductDto product)
     {
+        await VerifyAdminAsync();
+        var adminEmail = await GetAdminEmailAsync();
+
         using var connection = _sqlConnectionFactory.CreateConnection();
         var query = @"
             DECLARE @NextId INT;
@@ -159,11 +183,15 @@ public class ProductService : IProductService
         }
         
         _cache.Remove("AllProducts");
+        await _auditService.LogActionAsync("Create Product", adminEmail, product.Id.ToString());
         return product;
     }
 
     public async Task UpdateProductAsync(ProductDto product)
     {
+        await VerifyAdminAsync();
+        var adminEmail = await GetAdminEmailAsync();
+
         using var connection = _sqlConnectionFactory.CreateConnection();
         var query = @"
             UPDATE Products SET 
@@ -190,12 +218,17 @@ public class ProductService : IProductService
         }
 
         _cache.Remove("AllProducts");
+        await _auditService.LogActionAsync("Update Product", adminEmail, product.Id.ToString());
     }
 
     public async Task DeleteProductAsync(int id)
     {
+        await VerifyAdminAsync();
+        var adminEmail = await GetAdminEmailAsync();
+
         using var connection = _sqlConnectionFactory.CreateConnection();
         await connection.ExecuteAsync("DELETE FROM Products WHERE Id = @Id", new { Id = id });
         _cache.Remove("AllProducts");
+        await _auditService.LogActionAsync("Delete Product", adminEmail, id.ToString());
     }
 }

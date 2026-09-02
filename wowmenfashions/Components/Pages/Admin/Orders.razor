@@ -3,7 +3,6 @@
 @using MudBlazor
 @using wowmenfashions.Models
 @using wowmenfashions.Services
-@attribute [Authorize]
 @inject IOrderService OrderService
 @inject ISnackbar Snackbar
 
@@ -41,6 +40,10 @@
                     </MudSelect>
                 </EditTemplate>
             </TemplateColumn>
+
+            <PropertyColumn Property="x => x.PaymentStatus" Title="Payment Status" Editable="false" />
+            <PropertyColumn Property="x => x.RazorpayOrderId" Title="Razorpay Order ID" Editable="false" />
+            <PropertyColumn Property="x => x.RazorpayPaymentId" Title="Razorpay Payment ID" Editable="false" />
 
             <PropertyColumn Property="x => x.CourierName" Title="Courier" />
             <PropertyColumn Property="x => x.TrackingNumber" Title="Tracking No." />

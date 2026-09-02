@@ -8,10 +8,12 @@ namespace wowmenfashions.Services
     public class OrderService : IOrderService
     {
         private readonly ISqlConnectionFactory _sqlConnectionFactory;
+        private readonly IEncryptionService _encryptionService;
 
-        public OrderService(ISqlConnectionFactory sqlConnectionFactory)
+        public OrderService(ISqlConnectionFactory sqlConnectionFactory, IEncryptionService encryptionService)
         {
             _sqlConnectionFactory = sqlConnectionFactory;
+            _encryptionService = encryptionService;
         }
 
         public async Task UpdateOrderStatusAsync(int orderId, string status)
@@ -45,6 +47,12 @@ namespace wowmenfashions.Services
                     new { OrderId = order.Id },
                     commandType: CommandType.StoredProcedure);
                 order.Items = items.AsList();
+                
+                // Decrypt PII
+                if (!string.IsNullOrEmpty(order.ShippingAddress))
+                {
+                    order.ShippingAddress = _encryptionService.Decrypt(order.ShippingAddress);
+                }
             }
 
             return orders;

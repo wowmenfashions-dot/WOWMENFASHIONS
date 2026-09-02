@@ -1,5 +1,6 @@
 @page "/admin/products/new"
 @using Microsoft.AspNetCore.Authorization
+@using wowmenfashions.Components.Shared
 @attribute [Authorize(Roles = "Admin")]
 @using wowmenfashions.Models
 @using wowmenfashions.Services
@@ -11,6 +12,13 @@
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="my-8">
     <MudText Typo="Typo.h4" Class="mb-6">Create New Product</MudText>
+
+    <ErrorBoundary>
+        <ErrorContent>
+            <MudAlert Severity="Severity.Error">@context.Message</MudAlert>
+            <pre>@context.StackTrace</pre>
+        </ErrorContent>
+        <ChildContent>
 
     <MudPaper Class="pa-6">
         <EditForm Model="@_product" OnValidSubmit="HandleSubmitAsync">
@@ -44,7 +52,10 @@
                 </MudItem>
                 
                 <MudItem xs="12">
-                    <MudTextField @bind-Value="_product.Description" Label="Description" Lines="4" Variant="Variant.Outlined" />
+                    <div class="mb-6">
+                        <MudText Typo="Typo.subtitle2" Class="mb-2">Description</MudText>
+                        <QuillEditor @bind-Content="_product.Description" MinHeight="250px" />
+                    </div>
                 </MudItem>
                 
                 <MudItem xs="12" Class="mt-6">
@@ -75,6 +86,8 @@
             </MudGrid>
         </EditForm>
     </MudPaper>
+        </ChildContent>
+    </ErrorBoundary>
 </MudContainer>
 
 @code {

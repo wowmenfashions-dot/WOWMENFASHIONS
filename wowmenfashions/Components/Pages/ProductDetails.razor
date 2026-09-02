@@ -12,7 +12,20 @@
 <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 mb-6">
     @if (_isLoading)
     {
-        <MudProgressCircular Indeterminate="true" Color="Color.Primary" Class="d-block mx-auto mt-8" />
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="6">
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="400px" Class="rounded-lg" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSkeleton SkeletonType="SkeletonType.Text" Width="100px" Class="mb-2" />
+                <MudSkeleton SkeletonType="SkeletonType.Text" Width="80%" Height="40px" Class="mb-4" />
+                <MudSkeleton SkeletonType="SkeletonType.Text" Width="120px" Height="30px" Class="mb-6" />
+                <MudSkeleton SkeletonType="SkeletonType.Text" Width="100%" Height="20px" Class="mb-2" />
+                <MudSkeleton SkeletonType="SkeletonType.Text" Width="90%" Height="20px" Class="mb-2" />
+                <MudSkeleton SkeletonType="SkeletonType.Text" Width="95%" Height="20px" Class="mb-6" />
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="200px" Height="40px" Class="rounded-pill" />
+            </MudItem>
+        </MudGrid>
     }
     else if (_product == null)
     {
@@ -64,7 +77,14 @@
                     </div>
 
                     <MudText Typo="Typo.body2" Class="mb-4 text-muted" Style="line-height: 1.5;">
-                        @(_product.Description ?? "No description available for this product.")
+                        @if (!string.IsNullOrEmpty(_product.Description))
+                        {
+                            @((MarkupString)_product.Description)
+                        }
+                        else
+                        {
+                            @("No description available for this product.")
+                        }
                     </MudText>
 
                     <MudDivider Class="mb-4" />

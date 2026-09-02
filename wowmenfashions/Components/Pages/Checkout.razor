@@ -8,6 +8,9 @@
 @inject ISnackbar Snackbar
 @inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
 @inject ICustomerService CustomerService
+@inject IRazorpayService RazorpayService
+@inject IJSRuntime JSRuntime
+@inject IConfiguration Configuration
 
 <PageTitle>Checkout - WOWMEN</PageTitle>
 
@@ -63,19 +66,11 @@
                                     <MudTextField @bind-Value="CheckoutModel.Country" Label="Country" For="@(() => CheckoutModel.Country)" Required="true" />
                                 </MudItem>
 
-                                <!-- Dummy Payment Section -->
+                                <!-- Razorpay Payment Section -->
                                 <MudItem xs="12" Class="mt-4">
-                                    <MudText Typo="Typo.subtitle1" Class="mb-2 fw-bold">Payment Details</MudText>
+                                    <MudText Typo="Typo.subtitle1" Class="mb-2 fw-bold">Payment</MudText>
                                     <MudDivider Class="mb-4" />
-                                </MudItem>
-                                <MudItem xs="12">
-                                    <MudTextField @bind-Value="CheckoutModel.CardNumber" Label="Card Number (16 digits)" For="@(() => CheckoutModel.CardNumber)" Required="true" MaxLength="16" />
-                                </MudItem>
-                                <MudItem xs="6">
-                                    <MudTextField @bind-Value="CheckoutModel.ExpiryDate" Label="Expiry Date (MM/YY)" For="@(() => CheckoutModel.ExpiryDate)" Required="true" MaxLength="5" />
-                                </MudItem>
-                                <MudItem xs="6">
-                                    <MudTextField @bind-Value="CheckoutModel.Cvv" Label="CVV" For="@(() => CheckoutModel.Cvv)" Required="true" MaxLength="4" />
+                                    <MudText Typo="Typo.body2" Class="text-muted">You will be redirected to Razorpay to complete your payment securely.</MudText>
                                 </MudItem>
 
                                 <MudItem xs="12" Class="mt-6">
@@ -249,52 +244,72 @@
 
         try
         {
-            // Simulate Payment Gateway Delay
-            bool paymentSuccess = await CheckoutService.ProcessPaymentAsync(CheckoutModel);
+            string receiptId = Guid.NewGuid().ToString("N");
+            string orderId = await RazorpayService.CreateOrderAsync(FinalTotal, receiptId);
 
-            if (paymentSuccess)
+            var options = new
             {
-                var orderDto = new OrderDto
+                key = Configuration["Razorpay:KeyId"], // Loaded securely from config
+                amount = (int)(FinalTotal * 100),
+                currency = "INR",
+                name = "WOWMEN FASHIONS",
+                description = "Purchase of premium leather goods",
+                order_id = orderId,
+                prefill = new
                 {
-                    Subtotal = Subtotal,
-                    ShippingFee = ShippingFee,
-                    TaxAmount = TaxAmount,
-                    DiscountAmount = DiscountAmount,
-                    TotalAmount = FinalTotal,
-                    Status = "PaymentCompleted",
-                    CustomerName = CheckoutModel.FullName,
-                    CustomerEmail = CheckoutModel.Email,
-                    ShippingAddress = $"{CheckoutModel.Address}, {CheckoutModel.City}, {CheckoutModel.PostalCode}, {CheckoutModel.Country}",
-                    Items = ShoppingCart.Items.Select(i => new OrderItemDto
-                    {
-                        ProductId = i.ProductId,
-                        ProductName = i.ProductName ?? "Unknown Product",
-                        Price = i.UnitPrice,
-                        Quantity = i.Quantity,
-                        SelectedColor = i.SelectedColor
-                    }).ToList()
-                };
-
-                // Save Order to DB
-                await CheckoutService.PlaceOrderAsync(orderDto);
-
-                // Clear Cart
-                foreach(var item in ShoppingCart.Items)
+                    name = CheckoutModel.FullName,
+                    email = CheckoutModel.Email
+                },
+                theme = new
                 {
-                    await CartService.RemoveItemAsync(item.Id);
+                    color = "#3399cc"
                 }
+            };
 
-                IsOrderPlaced = true;
-                ShoppingCart = null;
+            var paymentResult = await JSRuntime.InvokeAsync<dynamic>("window.razorpayInterop.openCheckout", options);
+
+            // If we reach here, payment was successful according to the frontend callback
+            var orderDto = new OrderDto
+            {
+                Subtotal = Subtotal,
+                ShippingFee = ShippingFee,
+                TaxAmount = TaxAmount,
+                DiscountAmount = DiscountAmount,
+                TotalAmount = FinalTotal,
+                Status = "PaymentCompleted",
+                RazorpayOrderId = paymentResult.GetProperty("razorpayOrderId").GetString(),
+                RazorpayPaymentId = paymentResult.GetProperty("razorpayPaymentId").GetString(),
+                CustomerName = CheckoutModel.FullName,
+                CustomerEmail = CheckoutModel.Email,
+                ShippingAddress = $"{CheckoutModel.Address}, {CheckoutModel.City}, {CheckoutModel.PostalCode}, {CheckoutModel.Country}",
+                Items = ShoppingCart.Items.Select(i => new OrderItemDto
+                {
+                    ProductId = i.ProductId,
+                    ProductName = i.ProductName ?? "Unknown Product",
+                    Price = i.UnitPrice,
+                    Quantity = i.Quantity,
+                    SelectedColor = i.SelectedColor
+                }).ToList()
+            };
+
+            await CheckoutService.PlaceOrderAsync(orderDto);
+
+            foreach(var item in ShoppingCart.Items)
+            {
+                await CartService.RemoveItemAsync(item.Id);
             }
+
+            IsOrderPlaced = true;
+            ShoppingCart = null;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            Snackbar.Add("An error occurred processing your order.", Severity.Error);
+            Snackbar.Add($"Payment failed or was cancelled: {ex.Message}", Severity.Error);
         }
         finally
         {
             IsProcessing = false;
+            StateHasChanged();
         }
     }
 }
