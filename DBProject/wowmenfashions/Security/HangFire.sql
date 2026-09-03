@@ -1,3 +1,3 @@
-﻿CREATE SCHEMA [HangFire]
-    AUTHORIZATION [appuser];
+﻿--CREATE SCHEMA [HangFire]
+--    AUTHORIZATION [appuser];
 

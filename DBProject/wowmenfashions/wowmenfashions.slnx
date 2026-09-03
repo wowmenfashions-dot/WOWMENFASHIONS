@@ -1,5 +1,5 @@
 <Solution>
-  <Project Path="wowmenfashions.sqlproj">
+  <Project Path="wowmenfashions.sqlproj" Id="3bfa6337-f193-436c-8acd-164421dd02fd">
     <Build />
     <Deploy />
   </Project>
