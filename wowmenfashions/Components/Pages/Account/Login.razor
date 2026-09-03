@@ -20,8 +20,8 @@
 
         <form action="/api/auth/login@(string.IsNullOrEmpty(ReturnUrl) ? "" : $"?returnUrl={Uri.EscapeDataString(ReturnUrl)}")" method="post">
             <AntiforgeryToken />
-            <MudTextField T="string" name="email" Label="Email Address" Required="true" Class="mb-4" />
-            <MudTextField T="string" name="password" Label="Password" InputType="InputType.Password" Required="true" Class="mb-6" />
+            <MudTextField T="string" name="email" Label="Email Address" Required="true" Class="mb-4" Variant="Variant.Outlined" />
+            <MudTextField T="string" name="password" Label="Password" InputType="InputType.Password" Required="true" Class="mb-6" Variant="Variant.Outlined" />
 
             <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true">
                 Login

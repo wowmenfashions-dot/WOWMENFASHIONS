@@ -11,8 +11,8 @@
     <MudAppBar Elevation="0" Dense="true">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" Size="Size.Small" OnClick="DrawerToggle" />
         <a href="/" class="d-flex align-center text-decoration-none ml-2">
-            <img src="logo.png" alt="WOWMENFASHIONS" style="height: 32px; object-fit: contain; filter: invert(1) brightness(2);" />
-            <MudText Typo="Typo.h6" Class="ml-2 fw-bold" Style="color: white; letter-spacing: 1px;">WOWMEN</MudText>
+            <img src="logo.png" alt="WOWMENFASHIONS" style="height: 32px; object-fit: contain;" />
+            <MudText Typo="Typo.h6" Class="ml-2 fw-bold" Style="color: #1E1E1E; letter-spacing: 1px;">WOWMEN</MudText>
         </a>
         <MudSpacer />
         
@@ -58,18 +58,18 @@
             PaletteDark = _darkPalette,
             LayoutProperties = new LayoutProperties()
             {
-                DefaultBorderRadius = "8px",
+                DefaultBorderRadius = "16px",
             },
             Typography = new Typography()
             {
-                Default = { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" } },
-                H1 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" } },
-                H2 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" } },
-                H3 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" } },
-                H4 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" } },
-                H5 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" } },
-                H6 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" } },
-                Button = { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" }, TextTransform = "none" }
+                Default = { FontFamily = new[] { "Inter", "Helvetica", "Arial", "sans-serif" }, LetterSpacing = "0.5px" },
+                H1 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" }, FontWeight = 600.ToString() },
+                H2 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" }, FontWeight = 600.ToString() },
+                H3 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" }, FontWeight = 500.ToString() },
+                H4 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" }, FontWeight = 500.ToString() },
+                H5 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" }, FontWeight = 500.ToString() },
+                H6 = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" }, FontWeight = 500.ToString() },
+                Button = { FontFamily = new[] { "Outfit", "Helvetica", "Arial", "sans-serif" }, TextTransform = "uppercase", LetterSpacing = "1px", FontWeight = 500.ToString() }
             }
         };
     }
@@ -86,28 +86,28 @@
 
     private readonly PaletteLight _lightPalette = new()
     {
-        Primary = "#0B192C",
-        Secondary = "#D4AF37",
-        AppbarBackground = "#0B192C",
-        AppbarText = "#FFFFFF",
+        Primary = "#1E1E1E",
+        Secondary = "#6B7280",
+        AppbarBackground = "#FFFFFF",
+        AppbarText = "#1E1E1E",
         DrawerBackground = "#FFFFFF",
-        Background = "#FAFAFA",
+        Background = "#FFFFFF",
         Surface = "#FFFFFF",
-        TextPrimary = "#0B192C",
-        TextSecondary = "#4A5568"
+        TextPrimary = "#1E1E1E",
+        TextSecondary = "#6B7280"
     };
 
     private readonly PaletteDark _darkPalette = new()
     {
-        Primary = "#D4AF37",
-        Secondary = "#0B192C",
-        AppbarBackground = "#0B192C",
-        AppbarText = "#D4AF37",
-        DrawerBackground = "#1A1A1A",
-        Background = "#121212",
-        Surface = "#1E1E1E",
-        TextPrimary = "#F5F5F5",
-        TextSecondary = "#BDBDBD"
+        Primary = "#FFFFFF",
+        Secondary = "#CCCCCC",
+        AppbarBackground = "#000000",
+        AppbarText = "#FFFFFF",
+        DrawerBackground = "#111111",
+        Background = "#000000",
+        Surface = "#111111",
+        TextPrimary = "#FFFFFF",
+        TextSecondary = "#CCCCCC"
     };
 
     private string GetInitials(ClaimsPrincipal user)

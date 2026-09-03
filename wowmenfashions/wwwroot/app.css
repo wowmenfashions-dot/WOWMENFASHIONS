@@ -9,21 +9,14 @@ body {
     margin: 0;
 }
 
-h1, h2, h3, h4, h5, h6, 
-.mud-typography-h1, .mud-typography-h2, .mud-typography-h3, 
-.mud-typography-h4, .mud-typography-h5, .mud-typography-h6 {
-    font-family: 'Playfair Display', serif !important;
-}
-
 /* Micro animations */
 .hover-lift {
-    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transition: opacity 0.3s ease;
     border: none !important;
 }
 
 .hover-lift:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05) !important;
+    opacity: 0.8;
 }
 
 .fade-in {
@@ -39,4 +32,50 @@ h1, h2, h3, h4, h5, h6,
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Deo eCommerce Theme Overrides */
+
+/* Cards (No shadows, flat) */
+.mud-card {
+    box-shadow: none !important;
+    background-color: transparent !important;
+}
+
+/* Image hover fade (Deo Theme) */
+.gallery-image {
+    transition: opacity 0.3s ease !important;
+}
+.gallery-image:hover {
+    opacity: 0.85 !important;
+    transform: none !important;
+}
+
+/* Inputs (Pill shape) */
+.mud-input, .mud-input-control {
+    border-radius: 9999px !important;
+}
+
+.mud-input-outlined {
+    border-radius: 9999px !important;
+    border-color: #E5E7EB !important;
+}
+
+/* Buttons (Pill shape, soft black, subtle hover) */
+.mud-button-filled {
+    box-shadow: none !important;
+    border-radius: 9999px !important;
+    background-color: #1E1E1E !important;
+    color: #FFFFFF !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.mud-button-filled:hover {
+    background-color: #374151 !important;
+}
+
+.mud-button-outlined {
+    border-radius: 9999px !important;
+    border-color: #E5E7EB !important;
+    color: #1E1E1E !important;
 }
