@@ -1,0 +1,37 @@
+name: Build and Deploy to Azure App Service
+
+on:
+  push:
+    branches:
+      - release # Change this to 'main' if you want to deploy from the main branch instead
+
+env:
+  AZURE_WEBAPP_NAME: wowmenfashions # Replace this with your actual Azure App Service name
+  DOTNET_VERSION: '10.0.x'          # Based on your current .NET SDK version
+  PROJECT_PATH: './wowmenfashions'  # The folder containing your .csproj
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout GitHub repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.PROJECT_PATH }}/wowmenfashions.csproj
+
+      - name: Build and Publish
+        run: dotnet publish ${{ env.PROJECT_PATH }}/wowmenfashions.csproj -c Release -o ./publish
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ./publish
