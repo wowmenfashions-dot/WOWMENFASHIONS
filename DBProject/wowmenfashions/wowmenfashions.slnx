@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="wowmenfashions.sqlproj">
+    <Build />
+    <Deploy />
+  </Project>
+</Solution>

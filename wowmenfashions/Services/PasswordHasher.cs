@@ -19,7 +19,14 @@ public class PasswordHasher : IPasswordHasher
 
     public bool VerifyPassword(string password, string hash)
     {
-        var result = _hasher.VerifyHashedPassword("dummyUser", hash, password);
-        return result != PasswordVerificationResult.Failed;
+        try
+        {
+            var result = _hasher.VerifyHashedPassword("dummyUser", hash, password);
+            return result != PasswordVerificationResult.Failed;
+        }
+        catch (System.FormatException)
+        {
+            return false;
+        }
     }
 }

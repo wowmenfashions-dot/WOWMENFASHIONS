@@ -37,7 +37,7 @@
             </MudButton>
 
             <MudText Align="Align.Center" Class="mt-4">
-                Already have an account? <MudLink Href="/login">Login here</MudLink>
+                Already have an account? <MudLink Href="@($"/login" + (string.IsNullOrEmpty(ReturnUrl) ? "" : $"?returnUrl={Uri.EscapeDataString(ReturnUrl)}"))">Login here</MudLink>
             </MudText>
         </MudForm>
     </MudPaper>
@@ -48,6 +48,9 @@
     private bool _success;
     private bool _isProcessing = false;
     private RegisterModel _model = new();
+
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
 
     private string? MatchPasswords(string confirmPassword)
     {
@@ -70,7 +73,7 @@
                 if (result.Success)
                 {
                     Snackbar.Add("Registration successful! Please login.", Severity.Success);
-                    NavigationManager.NavigateTo("/login");
+                    NavigationManager.NavigateTo($"/login{(string.IsNullOrEmpty(ReturnUrl) ? "" : $"?returnUrl={Uri.EscapeDataString(ReturnUrl)}")}");
                 }
                 else
                 {

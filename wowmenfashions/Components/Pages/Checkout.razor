@@ -212,6 +212,12 @@
         ShoppingCart = await CartService.GetCartAsync();
 
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated != true)
+        {
+            NavigationManager.NavigateTo("/login?returnUrl=/checkout", forceLoad: true);
+            return;
+        }
+
         if (authState.User.Identity?.IsAuthenticated == true)
         {
             var email = authState.User.Identity.Name;

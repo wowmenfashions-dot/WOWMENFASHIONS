@@ -18,7 +18,7 @@
             <MudAlert Severity="Severity.Error" Class="mb-4">@ErrorMessage</MudAlert>
         }
 
-        <form action="/api/auth/login" method="post">
+        <form action="/api/auth/login@(string.IsNullOrEmpty(ReturnUrl) ? "" : $"?returnUrl={Uri.EscapeDataString(ReturnUrl)}")" method="post">
             <AntiforgeryToken />
             <MudTextField T="string" name="email" Label="Email Address" Required="true" Class="mb-4" />
             <MudTextField T="string" name="password" Label="Password" InputType="InputType.Password" Required="true" Class="mb-6" />
@@ -29,7 +29,7 @@
         </form>
 
         <MudText Align="Align.Center" Class="mt-4">
-            Don't have an account? <MudLink Href="/register">Register here</MudLink>
+            Don't have an account? <MudLink Href="@($"/register" + (string.IsNullOrEmpty(ReturnUrl) ? "" : $"?returnUrl={Uri.EscapeDataString(ReturnUrl)}"))">Register here</MudLink>
         </MudText>
     </MudPaper>
 </MudContainer>
@@ -37,4 +37,7 @@
 @code {
     [SupplyParameterFromQuery]
     public string? ErrorMessage { get; set; }
+
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
 }

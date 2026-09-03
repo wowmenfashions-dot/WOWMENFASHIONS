@@ -25,13 +25,17 @@
     <script src="js/quillInterop.js"></script>
 
     <!-- Google Analytics Placeholder -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9ZW88FMJM2"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
 
-      gtag('config', 'G-XXXXXXXXXX');
+      gtag('config', 'G-9ZW88FMJM2');
+
+      window.trackPage = function (path) {
+          gtag('config', 'G-9ZW88FMJM2', { 'page_path': path });
+      }
     </script>
 
     <HeadOutlet @rendermode="InteractiveServer" />

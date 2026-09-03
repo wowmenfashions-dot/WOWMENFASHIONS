@@ -122,7 +122,7 @@ app.Use(async (context, next) =>
 {
     context.Response.Headers.Append("Content-Security-Policy", 
         "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://cdn.quilljs.com; " +
+        "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://cdn.razorpay.com https://cdn.quilljs.com https://www.googletagmanager.com https://www.google-analytics.com; " +
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.quilljs.com; " +
         "font-src 'self' https://fonts.gstatic.com; " +
         "img-src 'self' data: https:; " +
