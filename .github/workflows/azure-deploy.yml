@@ -6,7 +6,7 @@ on:
       - release # Change this to 'main' if you want to deploy from the main branch instead
 
 env:
-  AZURE_WEBAPP_NAME: AZURE_WEBAPP_NAME: wowmenfashions-app # Replace this with your actual Azure App Service name
+  AZURE_WEBAPP_NAME: wowmenfashions-app # Replace this with your actual Azure App Service name
   DOTNET_VERSION: '10.0.x'          # Based on your current .NET SDK version
   PROJECT_PATH: './wowmenfashions'  # The folder containing your .csproj
 
