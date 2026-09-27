@@ -45,5 +45,8 @@ public class ProductDto
     }
     public List<string> AdditionalImages { get; set; } = new();
 
+    public double AverageRating { get; set; } = 0;
+    public int ReviewCount { get; set; } = 0;
+
     public bool IsOnSale => OriginalPrice.HasValue && OriginalPrice.Value > Price;
 }

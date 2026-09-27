@@ -56,6 +56,8 @@ builder.Services.AddScoped<IPageContentService, PageContentService>();
 builder.Services.AddScoped<IRazorpayService, RazorpayService>();
 builder.Services.AddScoped<IAdminAuditService, AdminAuditService>();
 builder.Services.AddScoped<IEncryptionService, EncryptionService>();
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
 
 builder.Services.AddHangfire(configuration => configuration
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)

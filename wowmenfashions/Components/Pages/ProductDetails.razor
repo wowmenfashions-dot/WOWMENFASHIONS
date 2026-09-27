@@ -4,6 +4,8 @@
 @using wowmenfashions.Components.Shared
 @inject IProductService ProductService
 @inject ICartService CartService
+@inject IReviewService ReviewService
+@inject AuthenticationStateProvider AuthStateProvider
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 
@@ -76,9 +78,17 @@
                         <MudText Typo="Typo.h5" Class="fw-bold mb-1">@_product.Name</MudText>
                         <MudText Typo="Typo.caption" Class="text-muted d-block mb-2">Item @_product.Id.ToString("0000000")</MudText>
                         <div class="d-flex align-center">
-                            <MudRating SelectedValue="4" Max="5" Size="Size.Small" ReadOnly="true" />
-                            <MudText Typo="Typo.caption" Color="Color.Info" Class="ms-2">4.3 (3)</MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Info" Class="ms-4">Write a review</MudText>
+                            @if (_product.ReviewCount > 0)
+                            {
+                                <MudRating SelectedValue="@((int)Math.Round(_product.AverageRating))" Max="5" Size="Size.Small" ReadOnly="true" Color="Color.Warning" />
+                                <MudText Typo="Typo.caption" Color="Color.Info" Class="ms-2">@_product.AverageRating.ToString("0.1") (@_product.ReviewCount)</MudText>
+                            }
+                            else
+                            {
+                                <MudRating SelectedValue="0" Max="5" Size="Size.Small" ReadOnly="true" />
+                                <MudText Typo="Typo.caption" Color="Color.Info" Class="ms-2">No reviews yet</MudText>
+                            }
+                            <MudText Typo="Typo.caption" Color="Color.Primary" Class="ms-4 text-decoration-underline cursor-pointer" @onclick="OpenReviewModal">Write a review</MudText>
                         </div>
                     </MudPaper>
 
@@ -244,7 +254,44 @@
                         </TitleContent>
                         <ChildContent>
                             <div class="py-2">
-                                <MudText Typo="Typo.body2" Style="color: #555;">Reviews will go here.</MudText>
+                                <div class="d-flex justify-space-between align-center mb-4">
+                                    <MudText Typo="Typo.h6">Customer Reviews</MudText>
+                                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="OpenReviewModal">Write a Review</MudButton>
+                                </div>
+                                
+                                @if (_reviews == null)
+                                {
+                                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                                }
+                                else if (!_reviews.Any())
+                                {
+                                    <MudText Typo="Typo.body2" Style="color: #555;">No reviews yet. Be the first to review this product!</MudText>
+                                }
+                                else
+                                {
+                                    @foreach (var review in _reviews)
+                                    {
+                                        <MudPaper Elevation="0" Class="border rounded pa-4 mb-4">
+                                            <div class="d-flex justify-space-between mb-2">
+                                                <div class="d-flex align-center gap-2">
+                                                    <MudAvatar Color="Color.Primary" Size="Size.Small">@review.CustomerName.FirstOrDefault()</MudAvatar>
+                                                    <MudText Typo="Typo.subtitle2" Class="fw-bold">@review.CustomerName</MudText>
+                                                </div>
+                                                <MudText Typo="Typo.caption" Class="text-muted">@review.CreatedAt.ToString("MMM dd, yyyy")</MudText>
+                                            </div>
+                                            <MudRating SelectedValue="@review.Rating" Max="5" Size="Size.Small" ReadOnly="true" Color="Color.Warning" Class="mb-2" />
+                                            <MudText Typo="Typo.body2">@review.Comment</MudText>
+                                            
+                                            @if (!string.IsNullOrEmpty(review.AdminReply))
+                                            {
+                                                <div class="mt-3 pa-3 rounded" style="background-color: #f8f9fa; border-left: 3px solid #0060a9;">
+                                                    <MudText Typo="Typo.caption" Class="fw-bold d-block mb-1">Response from WOWMENFASHIONS:</MudText>
+                                                    <MudText Typo="Typo.body2" Class="text-muted">@review.AdminReply</MudText>
+                                                </div>
+                                            }
+                                        </MudPaper>
+                                    }
+                                }
                             </div>
                         </ChildContent>
                     </MudExpansionPanel>
@@ -294,6 +341,36 @@
             </div>
         </div>
     </MudOverlay>
+    
+    <MudDialog @bind-Visible="_isReviewModalOpen" Options="new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true }">
+        <TitleContent>
+            <MudText Typo="Typo.h6">Write a Review</MudText>
+        </TitleContent>
+        <DialogContent>
+            @if (_isAuthenticated)
+            {
+                <div class="mb-4">
+                    <MudText Typo="Typo.body2" Class="mb-2">Overall Rating *</MudText>
+                    <MudRating @bind-SelectedValue="_newReviewRating" Max="5" Color="Color.Warning" Size="Size.Large" />
+                </div>
+                <MudTextField T="string" @bind-Value="_newReviewComment" Label="Your Review (Optional)" Lines="4" Variant="Variant.Outlined" />
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info">You must be logged in to leave a review.</MudAlert>
+                <div class="mt-4 text-center">
+                    <MudButton Href="/login" Variant="Variant.Filled" Color="Color.Primary">Log In</MudButton>
+                </div>
+            }
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="@(() => _isReviewModalOpen = false)">Cancel</MudButton>
+            @if (_isAuthenticated)
+            {
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SubmitReview" Disabled="@(_newReviewRating == 0)">Submit Review</MudButton>
+            }
+        </DialogActions>
+    </MudDialog>
 </MudContainer>
 
 @code {
@@ -311,10 +388,34 @@
     private string _zoomImageUrl = string.Empty;
     private double _zoomScale = 1.0;
     private List<string> _displayedImages = new();
+    
+    private List<ReviewDto>? _reviews;
+    private bool _isReviewModalOpen;
+    private int _newReviewRating = 0;
+    private string _newReviewComment = "";
+    private bool _isAuthenticated;
+    private int _currentCustomerId;
 
     protected override async Task OnInitializedAsync()
     {
         _isLoading = true;
+        
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        _isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+        if (_isAuthenticated)
+        {
+            var idClaim = authState.User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (idClaim != null && int.TryParse(idClaim.Value, out var cid))
+            {
+                _currentCustomerId = cid;
+                Console.WriteLine($"Parsed CustomerId: {cid}");
+            }
+            else
+            {
+                Console.WriteLine($"Failed to parse CustomerId. idClaim: {idClaim?.Value}");
+            }
+        }
+        
         _product = await ProductService.GetProductByIdAsync(Id);
         
         if (_product != null)
@@ -328,7 +429,6 @@
                 SelectColor(_product.Color);
             }
             
-            
             var availableSizes = GetAvailableSizesForCurrentColor();
             if (availableSizes.Any())
             {
@@ -341,9 +441,63 @@
                 new BreadcrumbItem(_product.Category, href: $"/category/{_product.Category.ToLower()}"),
                 new BreadcrumbItem(_product.Name, href: null, disabled: true)
             };
+            
+            await LoadReviews();
         }
         
         _isLoading = false;
+    }
+    
+    private async Task LoadReviews()
+    {
+        var fetched = await ReviewService.GetReviewsForProductAsync(Id);
+        _reviews = fetched.ToList();
+    }
+    
+    private void OpenReviewModal()
+    {
+        _newReviewRating = 0;
+        _newReviewComment = "";
+        _isReviewModalOpen = true;
+    }
+    
+    private async Task SubmitReview()
+    {
+        if (_newReviewRating == 0) return;
+        
+        if (_currentCustomerId == 0)
+        {
+            Snackbar.Add("Only registered customers can leave reviews.", Severity.Warning);
+            return;
+        }
+        
+        try
+        {
+            var reviewDto = new ReviewDto
+            {
+                ProductId = Id,
+                CustomerId = _currentCustomerId,
+                Rating = _newReviewRating,
+                Comment = _newReviewComment
+            };
+            
+            await ReviewService.AddReviewAsync(reviewDto);
+            Snackbar.Add("Thank you! Your review has been submitted.", Severity.Success);
+            _isReviewModalOpen = false;
+            await LoadReviews();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            if (ex.Message.Contains("UNIQUE KEY constraint"))
+            {
+                Snackbar.Add("You have already reviewed this product.", Severity.Warning);
+            }
+            else
+            {
+                Snackbar.Add("Could not submit review. Please try again later.", Severity.Error);
+            }
+        }
     }
 
     private void SelectSize(string size)

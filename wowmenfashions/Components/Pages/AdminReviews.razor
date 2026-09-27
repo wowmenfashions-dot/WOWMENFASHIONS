@@ -1,0 +1,156 @@
+@page "/admin/reviews"
+@using wowmenfashions.Models
+@using wowmenfashions.Services
+@using Microsoft.AspNetCore.Authorization
+@inject IReviewService ReviewService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@attribute [Authorize(Roles = "Admin")]
+
+<PageTitle>Manage Reviews - WOWMENFASHIONS Admin</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <div class="d-flex justify-space-between align-center mb-4">
+        <MudText Typo="Typo.h5" Class="fw-bold">Manage Reviews</MudText>
+    </div>
+
+    <MudTable Items="@_reviews" Hover="true" Loading="@_isLoading" Striped="true" Filter="new Func<ReviewDto,bool>(FilterFunc1)">
+        <ToolBarContent>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString" Placeholder="Search products or customers..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" />
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>Date</MudTh>
+            <MudTh>Product</MudTh>
+            <MudTh>Customer</MudTh>
+            <MudTh>Rating</MudTh>
+            <MudTh>Comment</MudTh>
+            <MudTh>Admin Reply</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Date">@context.CreatedAt.ToString("MMM dd, yyyy")</MudTd>
+            <MudTd DataLabel="Product">@context.ProductName</MudTd>
+            <MudTd DataLabel="Customer">@context.CustomerName</MudTd>
+            <MudTd DataLabel="Rating">
+                <MudRating SelectedValue="@context.Rating" Max="5" Size="Size.Small" ReadOnly="true" Color="Color.Warning" />
+            </MudTd>
+            <MudTd DataLabel="Comment">@context.Comment</MudTd>
+            <MudTd DataLabel="Admin Reply">
+                @if (string.IsNullOrEmpty(context.AdminReply))
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Default">No Reply</MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Info">@context.AdminReply</MudText>
+                }
+            </MudTd>
+            <MudTd DataLabel="Actions">
+                <MudIconButton Icon="@Icons.Material.Filled.Reply" Size="Size.Small" Color="Color.Info" OnClick="@(() => OpenReplyDialog(context))" Title="Reply" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="@(() => DeleteReview(context.Id))" Title="Delete" />
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+</MudContainer>
+
+<MudDialog @bind-Visible="_isReplyDialogOpen" Options="new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true }">
+    <TitleContent>
+        <MudText Typo="Typo.h6">Reply to Review</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField T="string" @bind-Value="_replyText" Label="Your Reply" Lines="4" Variant="Variant.Outlined" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CancelReply">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SubmitReply">Save Reply</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private bool _isLoading = true;
+    private List<ReviewDto> _reviews = new();
+    private string _searchString = "";
+
+    private bool _isReplyDialogOpen;
+    private ReviewDto? _reviewToReply;
+    private string _replyText = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReviews();
+    }
+
+    private async Task LoadReviews()
+    {
+        _isLoading = true;
+        try
+        {
+            var data = await ReviewService.GetAllReviewsAdminAsync();
+            _reviews = data.ToList();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add("Error loading reviews.", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private bool FilterFunc1(ReviewDto element) => FilterFunc(element, _searchString);
+
+    private bool FilterFunc(ReviewDto element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.ProductName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.CustomerName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+
+    private async Task DeleteReview(int reviewId)
+    {
+        bool? result = await DialogService.ShowMessageBoxAsync(
+            "Warning", 
+            "Deleting can not be undone!", 
+            yesText: "Delete!", cancelText: "Cancel");
+            
+        if (result == true)
+        {
+            await ReviewService.AdminDeleteReviewAsync(reviewId);
+            Snackbar.Add("Review deleted", Severity.Success);
+            await LoadReviews();
+        }
+    }
+
+    private void OpenReplyDialog(ReviewDto review)
+    {
+        _reviewToReply = review;
+        _replyText = review.AdminReply ?? "";
+        _isReplyDialogOpen = true;
+    }
+
+    private void CancelReply()
+    {
+        _isReplyDialogOpen = false;
+        _reviewToReply = null;
+    }
+
+    private async Task SubmitReply()
+    {
+        if (_reviewToReply != null)
+        {
+            await ReviewService.AdminReplyAsync(_reviewToReply.Id, _replyText);
+            Snackbar.Add("Reply saved", Severity.Success);
+            _isReplyDialogOpen = false;
+            await LoadReviews();
+        }
+    }
+}

@@ -3,16 +3,15 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 
-<MudCard Elevation="0" Outlined="true" Class="product-card mb-2 d-flex flex-column h-100" Style="background: transparent; border-radius: 8px; transition: all 0.2s ease-in-out;">
+<MudCard Class="premium-product-card pa-0 h-100 d-flex flex-column" Elevation="0">
     <a href="/product/@Product.Id" class="text-decoration-none d-flex flex-column">
-        <!-- Image Container (No rounded corners) -->
-        <div class="product-image-container position-relative overflow-hidden mb-2" style="aspect-ratio: 1/1; background-color: transparent;">
-            <img src="@(string.IsNullOrWhiteSpace(CurrentImageUrl) ? "https://placehold.co/500x500/FFFFFF/1E1E1E.avif?text=No+Image" : CurrentImageUrl)" alt="@Product.Name" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.onerror=null; this.src='https://placehold.co/500x500/FFFFFF/1E1E1E.avif?text=No+Image';" />
+        <div class="premium-image-wrapper pa-4" style="aspect-ratio: 4/5; display: flex; align-items: center; justify-content: center;">
+            <img src="@(string.IsNullOrWhiteSpace(CurrentImageUrl) ? "https://placehold.co/500x500/FFFFFF/1E1E1E.avif?text=No+Image" : CurrentImageUrl)" alt="@Product.Name" class="premium-product-image" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.onerror=null; this.src='https://placehold.co/500x500/FFFFFF/1E1E1E.avif?text=No+Image';" />
         </div>
     </a>
-        
-    <MudCardContent Class="pa-2 pa-sm-3 d-flex flex-column flex-grow-1">
-        <!-- Color Swatches -->
+
+    <MudCardContent Class="px-3 py-4 flex-grow-1 d-flex flex-column">
+        <!-- Circular Color Swatches -->
         @if (Product.ColorImages != null && Product.ColorImages.Any())
         {
             var distinctColors = Product.ColorImages
@@ -20,66 +19,63 @@
                 .Select(g => new { Color = g.Key, ImageUrl = g.First().Value })
                 .ToList();
                 
-            <div class="d-flex flex-wrap gap-2 mb-2">
+            <div class="d-flex flex-wrap gap-2 mb-3">
                 @foreach (var colorData in distinctColors)
                 {
-                    <div class="border p-1 cursor-pointer @(CurrentColorName == colorData.Color ? "border-dark border-2" : "")" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;" @onmouseenter="@(() => OnColorHover(colorData.Color, colorData.ImageUrl))" @onclick="@(() => OnColorHover(colorData.Color, colorData.ImageUrl))" title="@colorData.Color">
-                        <div style="background-color: @GetCssColor(colorData.Color); width: 100%; height: 100%;"></div>
+                    <div class="premium-color-swatch @(CurrentColorName == colorData.Color ? "active" : "")"
+                         style="background-color: @GetCssColor(colorData.Color);"
+                         @onmouseenter="@(() => OnColorHover(colorData.Color, colorData.ImageUrl))"
+                         @onclick="@(() => OnColorHover(colorData.Color, colorData.ImageUrl))"
+                         title="@colorData.Color">
                     </div>
                 }
             </div>
-            <MudText Typo="Typo.body2" Class="mb-3" Style="color: #333;">Color: <strong>@CurrentColorName</strong></MudText>
         }
         else
         {
-            <div style="height: 52px;"></div> <!-- Placeholder to maintain height -->
-        }
-
-        <!-- Pricing Section -->
-        <MudText Typo="Typo.h6" Class="fw-bold mb-1" Style="color: #333; line-height: 1;">@Product.Price.ToString("C")</MudText>
-        @if (Product.IsOnSale && Product.OriginalPrice.HasValue)
-        {
-            <MudText Typo="Typo.body2" Class="mb-1" Style="color: #008000; font-weight: 500;">After @((Product.OriginalPrice.Value - Product.Price).ToString("C")) OFF</MudText>
-            <MudText Typo="Typo.caption" Class="mb-2" Style="color: #666; text-decoration: line-through;">was @Product.OriginalPrice.Value.ToString("C")</MudText>
-        }
-        else
-        {
-            <!-- Spacer to keep height consistent -->
-            <div style="height: 48px;"></div>
+            <div style="height: 36px;"></div> <!-- Placeholder to maintain height -->
         }
 
         <!-- Product Title -->
-        <a href="/product/@Product.Id" class="text-decoration-none">
-            <MudText Typo="Typo.body1" Class="mb-2 mt-2" Style="color: #333; line-height: 1.3; height: 42px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">@Product.Name</MudText>
+        <a href="/product/@Product.Id" class="text-decoration-none mb-1">
+            <MudText Typo="Typo.h6" Class="fw-bold" Style="color: #1a1a1a; font-size: 1.05rem; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">@Product.Name</MudText>
         </a>
+        
+        <div class="mt-auto pt-2">
+            <!-- Pricing Section -->
+            @if (Product.IsOnSale && Product.OriginalPrice.HasValue)
+            {
+                <div class="d-flex align-center gap-2 mb-1">
+                    <MudText Typo="Typo.body1" Class="fw-bold text-dark">@Product.Price.ToString("C")</MudText>
+                    <MudText Typo="Typo.body2" Class="text-muted text-decoration-line-through">@Product.OriginalPrice.Value.ToString("C")</MudText>
+                </div>
+            }
+            else
+            {
+                <MudText Typo="Typo.body1" Class="fw-bold text-dark mb-1">@Product.Price.ToString("C")</MudText>
+            }
 
-        <!-- Ratings (Mocked based on image) -->
-        <a href="/product/@Product.Id" class="text-decoration-none">
-            <div class="d-flex align-center mb-3">
-                <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Size="Size.Small" />
-                <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Size="Size.Small" />
-                <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Size="Size.Small" />
-                <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Size="Size.Small" />
-                <MudIcon Icon="@Icons.Material.Filled.StarHalf" Color="Color.Warning" Size="Size.Small" />
-                <MudText Typo="Typo.caption" Class="ms-1 text-decoration-underline" Style="color: #555;">(11 reviews)</MudText>
+            <!-- Dynamic Ratings -->
+            <div class="d-flex align-center mt-2 mb-3">
+                @if (Product.ReviewCount > 0)
+                {
+                    <MudRating SelectedValue="@((int)Math.Round(Product.AverageRating))" Max="5" Size="Size.Small" ReadOnly="true" Color="Color.Warning" />
+                    <MudText Typo="Typo.caption" Class="text-muted ms-2">@Product.AverageRating.ToString("0.1") (@Product.ReviewCount)</MudText>
+                }
+                else
+                {
+                    <MudRating SelectedValue="0" Max="5" Size="Size.Small" ReadOnly="true" Color="Color.Default" />
+                    <MudText Typo="Typo.caption" Class="text-muted ms-2">No reviews yet</MudText>
+                }
             </div>
-        </a>
-
-        <!-- Delivery Status -->
-        <div class="d-flex align-center mb-4">
-            <MudIcon Icon="@Icons.Material.Outlined.LocalShipping" Size="Size.Small" Class="me-2" Style="color: #333;" />
-            <MudText Typo="Typo.body2" Style="color: #333; font-weight: 600;">Delivery <span style="color: #008000; font-weight: normal;">Available</span></MudText>
-        </div>
-
-        <MudSpacer />
-
-        <!-- Action Button -->
-        <div class="mt-auto">
-            <MudButton Href="@($"/product/{Product.Id}")" Variant="Variant.Filled" Color="Color.Dark" FullWidth="true" Class="rounded-pill shadow-none fw-bold" Style="padding: 10px 0; text-transform: none; font-size: 1rem;">
-                Select Options
-            </MudButton>
         </div>
     </MudCardContent>
+
+    <MudCardActions Class="px-3 pb-4 pt-0 mt-auto justify-center">
+        <MudButton Href="@($"/product/{Product.Id}")" Variant="Variant.Outlined" Color="Color.Dark" FullWidth="true" Class="py-2 fw-bold" Style="border-width: 1.5px; border-radius: 9999px;">
+            View Details
+        </MudButton>
+    </MudCardActions>
 </MudCard>
 
 @code {

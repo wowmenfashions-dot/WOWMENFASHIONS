@@ -91,6 +91,19 @@ public class ProductService : IProductService
             }
             catch { /* Ignore if table doesn't exist yet */ }
 
+            var reviewsQuery = "SELECT ProductId, AVG(CAST(Rating as FLOAT)) as AverageRating, COUNT(*) as ReviewCount FROM Reviews GROUP BY ProductId";
+            try 
+            {
+                var reviews = await connection.QueryAsync<(int ProductId, double AverageRating, int ReviewCount)>(reviewsQuery);
+                foreach (var p in products)
+                {
+                    var rev = reviews.FirstOrDefault(r => r.ProductId == p.Id);
+                    p.AverageRating = rev.ReviewCount > 0 ? rev.AverageRating : 0;
+                    p.ReviewCount = rev.ReviewCount;
+                }
+            }
+            catch { /* Ignore if table doesn't exist yet */ }
+
             return products;
         }) ?? Enumerable.Empty<ProductDto>();
     }
