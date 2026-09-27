@@ -40,7 +40,7 @@ public class CartRepository : ICartRepository
         }
     }
 
-    public async Task AddItemAsync(Guid guestCartId, int? customerId, int productId, int quantity, string? selectedColor = null)
+    public async Task AddItemAsync(Guid guestCartId, int? customerId, int productId, int quantity, string? selectedColor = null, string? selectedSize = null)
     {
         using var connection = _connectionFactory.CreateConnection();
         var parameters = new DynamicParameters();
@@ -49,6 +49,7 @@ public class CartRepository : ICartRepository
         parameters.Add("@ProductId", productId, DbType.Int32);
         parameters.Add("@Quantity", quantity, DbType.Int32);
         parameters.Add("@SelectedColor", selectedColor, DbType.String);
+        parameters.Add("@SelectedSize", selectedSize, DbType.String);
 
         await connection.ExecuteAsync(
             "dbo.Cart_AddItem", 

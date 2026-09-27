@@ -73,12 +73,14 @@
                                     <HeaderContent>
                                         <MudTh>Product</MudTh>
                                         <MudTh>Color</MudTh>
+                                        <MudTh>Size</MudTh>
                                         <MudTh Style="text-align:right">Price</MudTh>
                                         <MudTh Style="text-align:right">Qty</MudTh>
                                     </HeaderContent>
                                     <RowTemplate>
                                         <MudTd DataLabel="Product">@context.ProductName</MudTd>
                                         <MudTd DataLabel="Color">@(string.IsNullOrEmpty(context.SelectedColor) ? "N/A" : context.SelectedColor)</MudTd>
+                                        <MudTd DataLabel="Size">@(string.IsNullOrEmpty(context.SelectedSize) ? "N/A" : context.SelectedSize)</MudTd>
                                         <MudTd DataLabel="Price" Style="text-align:right">@context.Price.ToString("C")</MudTd>
                                         <MudTd DataLabel="Qty" Style="text-align:right">@context.Quantity</MudTd>
                                     </RowTemplate>

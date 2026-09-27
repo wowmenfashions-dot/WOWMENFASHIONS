@@ -24,12 +24,12 @@ public class CartService : ICartService
         return await _cartRepository.GetCartAsync(guestCartId, customerId);
     }
 
-    public async Task AddItemAsync(int productId, int quantity, string? selectedColor = null)
+    public async Task AddItemAsync(int productId, int quantity, string? selectedColor = null, string? selectedSize = null)
     {
         var guestCartId = _guestSessionService.GetOrCreateGuestCartId();
         int? customerId = null; // To be implemented in User Story 4
 
-        await _cartRepository.AddItemAsync(guestCartId, customerId, productId, quantity, selectedColor);
+        await _cartRepository.AddItemAsync(guestCartId, customerId, productId, quantity, selectedColor, selectedSize);
     }
 
     public async Task UpdateItemQuantityAsync(int cartItemId, int quantity)

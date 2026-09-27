@@ -3,57 +3,121 @@
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 
-<MudCard Elevation="0" Class="product-card mb-2 d-flex flex-column h-100" Style="background: transparent; border-radius: 0;">
-    <a href="/product/@Product.Id" class="text-decoration-none d-flex flex-column flex-grow-1">
-        <div class="product-image-container position-relative overflow-hidden gallery-image" style="height: 300px; background-color: #F3F4F6; border-radius: 16px;">
-            @if (Product.IsOnSale)
-            {
-                <MudChip T="string" Color="Color.Error" Size="Size.Small" Class="sale-badge" Style="position: absolute; top: 12px; left: 12px; font-size: 10px; height: 24px; z-index: 10; border-radius: 9999px; font-weight: 600;">Sale!</MudChip>
-            }
-            
-            <img src="@(string.IsNullOrWhiteSpace(Product.ImageUrl) ? "https://placehold.co/400x400/F3F4F6/1E1E1E.avif?text=No+Image" : Product.ImageUrl)" alt="@Product.Name" style="width: 100%; height: 100%; object-fit: cover;" class="primary-image transition-transform" onerror="this.onerror=null; this.src='https://placehold.co/400x400/F3F4F6/1E1E1E.avif?text=No+Image';" />
+<MudCard Elevation="0" Outlined="true" Class="product-card mb-2 d-flex flex-column h-100" Style="background: transparent; border-radius: 8px; transition: all 0.2s ease-in-out;">
+    <a href="/product/@Product.Id" class="text-decoration-none d-flex flex-column">
+        <!-- Image Container (No rounded corners) -->
+        <div class="product-image-container position-relative overflow-hidden mb-2" style="aspect-ratio: 1/1; background-color: transparent;">
+            <img src="@(string.IsNullOrWhiteSpace(CurrentImageUrl) ? "https://placehold.co/500x500/FFFFFF/1E1E1E.avif?text=No+Image" : CurrentImageUrl)" alt="@Product.Name" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.onerror=null; this.src='https://placehold.co/500x500/FFFFFF/1E1E1E.avif?text=No+Image';" />
         </div>
-        
-        <MudCardContent Class="pt-3 pb-3 px-1 d-flex flex-column flex-grow-1">
-            <MudText Typo="Typo.caption" Class="d-block text-start mb-1" Style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #6B7280;">@Product.Category</MudText>
-            <MudText Typo="Typo.body2" Class="fw-bold text-start mb-2 d-block" Style="min-height: 20px; color: #1E1E1E; font-weight: 500;">@Product.Name</MudText>
-            
-            <div class="d-flex justify-start align-center mt-auto">
-                @if (Product.IsOnSale)
-                {
-                    <MudText Typo="Typo.caption" Style="text-decoration: line-through; color: #6B7280;" Class="me-2">@Product.OriginalPrice?.ToString("C")</MudText>
-                }
-                <MudText Typo="Typo.body1" Class="fw-bold" Style="color: #1E1E1E;">@Product.Price.ToString("C")</MudText>
-            </div>
-        </MudCardContent>
     </a>
-    
-    <div class="px-1 pb-3 w-100 mt-2">
-        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" OnClick="AddToCartAsync" FullWidth="true" Class="rounded-pill" Style="font-weight: 600;">
-            Add to Cart
-        </MudButton>
-    </div>
+        
+    <MudCardContent Class="pa-2 pa-sm-3 d-flex flex-column flex-grow-1">
+        <!-- Color Swatches -->
+        @if (Product.ColorImages != null && Product.ColorImages.Any())
+        {
+            <div class="d-flex flex-wrap gap-2 mb-2">
+                @foreach (var kvp in Product.ColorImages)
+                {
+                    <div class="border p-1 cursor-pointer @(CurrentColorName == kvp.Key ? "border-dark border-2" : "")" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;" @onmouseover="@(() => OnColorHover(kvp.Key, kvp.Value))" title="@kvp.Key">
+                        <div style="background-color: @GetCssColor(kvp.Key); width: 100%; height: 100%;"></div>
+                    </div>
+                }
+            </div>
+            <MudText Typo="Typo.body2" Class="mb-3" Style="color: #333;">Color: <strong>@CurrentColorName</strong></MudText>
+        }
+        else
+        {
+            <div style="height: 52px;"></div> <!-- Placeholder to maintain height -->
+        }
+
+        <!-- Pricing Section -->
+        <MudText Typo="Typo.h6" Class="fw-bold mb-1" Style="color: #333; line-height: 1;">@Product.Price.ToString("C")</MudText>
+        @if (Product.IsOnSale && Product.OriginalPrice.HasValue)
+        {
+            <MudText Typo="Typo.body2" Class="mb-1" Style="color: #008000; font-weight: 500;">After @((Product.OriginalPrice.Value - Product.Price).ToString("C")) OFF</MudText>
+            <MudText Typo="Typo.caption" Class="mb-2" Style="color: #666; text-decoration: line-through;">was @Product.OriginalPrice.Value.ToString("C")</MudText>
+        }
+        else
+        {
+            <!-- Spacer to keep height consistent -->
+            <div style="height: 48px;"></div>
+        }
+
+        <!-- Product Title -->
+        <a href="/product/@Product.Id" class="text-decoration-none">
+            <MudText Typo="Typo.body1" Class="mb-2 mt-2" Style="color: #333; line-height: 1.3; height: 42px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">@Product.Name</MudText>
+        </a>
+
+        <!-- Ratings (Mocked based on image) -->
+        <a href="/product/@Product.Id" class="text-decoration-none">
+            <div class="d-flex align-center mb-3">
+                <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Size="Size.Small" />
+                <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Size="Size.Small" />
+                <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Size="Size.Small" />
+                <MudIcon Icon="@Icons.Material.Filled.Star" Color="Color.Warning" Size="Size.Small" />
+                <MudIcon Icon="@Icons.Material.Filled.StarHalf" Color="Color.Warning" Size="Size.Small" />
+                <MudText Typo="Typo.caption" Class="ms-1 text-decoration-underline" Style="color: #555;">(11 reviews)</MudText>
+            </div>
+        </a>
+
+        <!-- Delivery Status -->
+        <div class="d-flex align-center mb-4">
+            <MudIcon Icon="@Icons.Material.Outlined.LocalShipping" Size="Size.Small" Class="me-2" Style="color: #333;" />
+            <MudText Typo="Typo.body2" Style="color: #333; font-weight: 600;">Delivery <span style="color: #008000; font-weight: normal;">Available</span></MudText>
+        </div>
+
+        <MudSpacer />
+
+        <!-- Action Button -->
+        <div class="mt-auto">
+            <MudButton Href="@($"/product/{Product.Id}")" Variant="Variant.Filled" Color="Color.Dark" FullWidth="true" Class="rounded-pill shadow-none fw-bold" Style="padding: 10px 0; text-transform: none; font-size: 1rem;">
+                Select Options
+            </MudButton>
+        </div>
+    </MudCardContent>
 </MudCard>
 
 @code {
     [Parameter, EditorRequired]
     public ProductDto Product { get; set; } = null!;
 
-    private void NavigateToProduct()
+    private string CurrentImageUrl = string.Empty;
+    private string CurrentColorName = "Black";
+
+    private int _lastProductId = -1;
+
+    protected override void OnParametersSet()
     {
-        Navigation.NavigateTo($"/product/{Product.Id}");
+        if (_lastProductId != Product.Id)
+        {
+            _lastProductId = Product.Id;
+            if (Product.ColorImages != null && Product.ColorImages.Any())
+            {
+                CurrentColorName = Product.ColorImages.Keys.First();
+                var images = Product.ColorImages.Values.First();
+                CurrentImageUrl = images?.Split(',', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim() ?? string.Empty;
+            }
+            else
+            {
+                CurrentColorName = string.Empty;
+                CurrentImageUrl = Product.ImageUrl?.Split(',', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim() ?? "";
+            }
+        }
     }
 
-    private async Task AddToCartAsync()
+    private void OnColorHover(string colorName, string? newImage)
     {
-        try
-        {
-            await CartService.AddItemAsync(Product.Id, 1);
-            Snackbar.Add($"{Product.Name} added to cart!", Severity.Success);
-        }
-        catch (Exception)
-        {
-            Snackbar.Add("Failed to add to cart.", Severity.Error);
-        }
+        CurrentColorName = colorName;
+        // If a new image is provided, use it. Otherwise fallback to the primary image.
+        CurrentImageUrl = !string.IsNullOrWhiteSpace(newImage) 
+            ? (newImage.Split(',', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim() ?? "") 
+            : (Product.ImageUrl?.Split(',', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim() ?? "");
+    }
+
+    private string GetCssColor(string colorName)
+    {
+        if (string.IsNullOrWhiteSpace(colorName)) return "#000";
+        // Convert names like "Royal Blue" to "royalblue" which is a valid CSS named color
+        return colorName.ToLower().Replace(" ", "");
     }
 }

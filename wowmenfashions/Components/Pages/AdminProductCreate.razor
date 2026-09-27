@@ -7,11 +7,18 @@
 @inject IProductService ProductService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment WebHostEnvironment
 
 <PageTitle>Create Product | Admin</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="my-8">
-    <MudText Typo="Typo.h4" Class="mb-6">Create New Product</MudText>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="my-8">
+    <div class="d-flex align-center justify-space-between mb-6">
+        <div>
+            <MudText Typo="Typo.h4" Class="fw-bold">Create Product</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Surface">Add a new product to your catalog.</MudText>
+        </div>
+        <MudButton Variant="Variant.Outlined" Color="Color.Dark" Href="/admin/products" StartIcon="@Icons.Material.Filled.ArrowBack">Back</MudButton>
+    </div>
 
     <ErrorBoundary>
         <ErrorContent>
@@ -20,72 +27,130 @@
         </ErrorContent>
         <ChildContent>
 
-    <MudPaper Class="pa-6">
         <EditForm Model="@_product" OnValidSubmit="HandleSubmitAsync">
             <DataAnnotationsValidator />
             
             <MudGrid>
-                <MudItem xs="12" md="6">
-                    <MudTextField @bind-Value="_product.Name" Label="Product Name" Required="true" Variant="Variant.Outlined" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudSelect T="int" Value="_selectedCategoryId" ValueChanged="OnCategoryChanged" Label="Category" Required="true" Variant="Variant.Outlined">
-                        @foreach (var cat in _categories.Where(c => c.ParentId == null))
-                        {
-                            <MudSelectItem Value="@cat.Id">@cat.Name</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudSelect T="int" Value="_selectedSubCategoryId" ValueChanged="OnSubCategoryChanged" Label="Sub Category" Required="false" Variant="Variant.Outlined" Disabled="@(!_subCategories.Any())">
-                        @foreach (var sub in _subCategories)
-                        {
-                            <MudSelectItem Value="@sub.Id">@sub.Name</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudNumericField @bind-Value="_product.Price" Label="Price" Required="true" Min="0" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentText="₹" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudNumericField @bind-Value="_product.OriginalPrice" Label="Original Price (optional)" Min="0" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentText="₹" />
-                </MudItem>
-                
-                <MudItem xs="12">
-                    <div class="mb-6">
-                        <MudText Typo="Typo.subtitle2" Class="mb-2">Description</MudText>
-                        <QuillEditor @bind-Content="_product.Description" MinHeight="250px" />
-                    </div>
-                </MudItem>
-                
-                <MudItem xs="12" Class="mt-6">
-                    <MudText Typo="Typo.h6" Class="mb-2">Color Variants</MudText>
-                    <MudDivider Class="mb-4" />
+                <!-- Left Column (Main Content) -->
+                <MudItem xs="12" md="8">
                     
-                    @foreach (var cv in _colorVariants)
-                    {
-                        <MudGrid Class="align-center mb-2">
-                            <MudItem xs="4">
-                                <MudTextField @bind-Value="cv.ColorName" Label="Color Name (e.g. Red)" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            </MudItem>
-                            <MudItem xs="6">
-                                <MudTextField @bind-Value="cv.ImageUrl" Label="Image URL" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                            </MudItem>
-                            <MudItem xs="2">
-                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => _colorVariants.Remove(cv))" />
-                            </MudItem>
-                        </MudGrid>
-                    }
-                    
-                    <MudButton StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Text" Color="Color.Primary" OnClick="AddColorVariant">Add Color</MudButton>
+                    <!-- Basic Info Card -->
+                    <MudPaper Class="pa-6 mb-6" Elevation="1" Style="border-radius: 8px;">
+                        <MudText Typo="Typo.h6" Class="mb-4 fw-bold">Basic Information</MudText>
+                        <MudDivider Class="mb-6" />
+                        
+                        <MudTextField @bind-Value="_product.Name" Label="Product Name" Required="true" Variant="Variant.Outlined" Class="mb-4" />
+                        
+                        <div class="mb-4">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold" Style="color: #555;">Description (Product Details)</MudText>
+                            <QuillEditor @bind-Content="_product.Description" MinHeight="150px" />
+                        </div>
+                        
+                        <div class="mb-4">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold" Style="color: #555;">Specifications</MudText>
+                            <QuillEditor @bind-Content="_product.Specifications" MinHeight="150px" />
+                        </div>
+                        
+                        <div class="mb-4">
+                            <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold" Style="color: #555;">Shipping & Returns</MudText>
+                            <QuillEditor @bind-Content="_product.ShippingReturns" MinHeight="150px" />
+                        </div>
+                    </MudPaper>
+
+                    <!-- Media & Variants Card -->
+                    <MudPaper Class="pa-6 mb-6" Elevation="1" Style="border-radius: 8px;">
+                        <div class="d-flex align-center justify-space-between mb-4">
+                            <MudText Typo="Typo.h6" Class="fw-bold">Color Variants & Images</MudText>
+                            <MudButton StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Text" Color="Color.Primary" OnClick="AddColorVariant">Add Color</MudButton>
+                        </div>
+                        <MudDivider Class="mb-6" />
+                        
+                        @if (!_colorVariants.Any())
+                        {
+                            <MudAlert Severity="Severity.Info" Class="mb-4">No color variants added. The default fallback image will be used.</MudAlert>
+                        }
+                        
+                        @foreach (var cv in _colorVariants)
+                        {
+                            <MudPaper Elevation="0" Class="pa-4 mb-4" Style="border: 1px solid #e0e0e0; border-radius: 6px;">
+                                <MudGrid Class="align-center">
+                                    <MudItem xs="12" sm="3">
+                                        <MudTextField @bind-Value="cv.ColorName" Label="Color Name (e.g. Red)" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                    </MudItem>
+                                    <MudItem xs="12" sm="5">
+                                        <MudTextField @bind-Value="cv.ImageUrl" Label="Image URL" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                    </MudItem>
+                                    <MudItem xs="12" sm="3" Class="d-flex align-center">
+                                        <div style="position: relative; overflow: hidden; display: inline-block;">
+                                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload" Size="Size.Small">
+                                                Upload
+                                            </MudButton>
+                                            <InputFile OnChange="@(async e => await UploadImageAsync(e.File, cv))" accept=".png, .jpg, .jpeg, .webp, .avif" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;" />
+                                        </div>
+                                    </MudItem>
+                                    <MudItem xs="12" sm="1" Class="d-flex justify-end">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => _colorVariants.Remove(cv))" />
+                                    </MudItem>
+                                </MudGrid>
+                            </MudPaper>
+                        }
+                    </MudPaper>
                 </MudItem>
 
-                <MudItem xs="12" Class="d-flex justify-end mt-4">
-                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large">Create Product</MudButton>
+                <!-- Right Column (Sidebar Content) -->
+                <MudItem xs="12" md="4">
+                    
+                    <!-- Organization Card -->
+                    <MudPaper Class="pa-6 mb-6" Elevation="1" Style="border-radius: 8px;">
+                        <MudText Typo="Typo.h6" Class="mb-4 fw-bold">Organization</MudText>
+                        <MudDivider Class="mb-6" />
+                        
+                        <MudSelect T="int" Value="_selectedCategoryId" ValueChanged="OnCategoryChanged" Label="Category" Required="true" Variant="Variant.Outlined" Class="mb-4">
+                            @foreach (var cat in _categories.Where(c => c.ParentId == null))
+                            {
+                                <MudSelectItem Value="@cat.Id">@cat.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                        
+                        <MudSelect T="int" Value="_selectedSubCategoryId" ValueChanged="OnSubCategoryChanged" Label="Sub Category" Required="false" Variant="Variant.Outlined" Disabled="@(!_subCategories.Any())">
+                            @foreach (var sub in _subCategories)
+                            {
+                                <MudSelectItem Value="@sub.Id">@sub.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudPaper>
+                    
+                    <!-- Pricing Card -->
+                    <MudPaper Class="pa-6 mb-6" Elevation="1" Style="border-radius: 8px;">
+                        <MudText Typo="Typo.h6" Class="mb-4 fw-bold">Pricing</MudText>
+                        <MudDivider Class="mb-6" />
+                        
+                        <MudNumericField @bind-Value="_product.Price" Label="Price" Required="true" Min="0" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentText="₹" Class="mb-4" />
+                        <MudNumericField @bind-Value="_product.OriginalPrice" Label="Original Price (Compare at)" Min="0" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentText="₹" />
+                    </MudPaper>
+                    
+                    <!-- Sizes Card -->
+                    <MudPaper Class="pa-6 mb-6" Elevation="1" Style="border-radius: 8px;">
+                        <MudText Typo="Typo.h6" Class="mb-4 fw-bold">Sizes</MudText>
+                        <MudDivider Class="mb-6" />
+                        
+                        <MudSelect T="string" @bind-SelectedValues="_selectedSizes" MultiSelection="true" Label="Available Sizes" SelectAll="true" SelectAllText="Select All" Variant="Variant.Outlined">
+                            @foreach (var size in _availableSizeOptions)
+                            {
+                                <MudSelectItem Value="@size">@size</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudPaper>
+                    
+                    <!-- Publish Action -->
+                    <MudPaper Class="pa-6" Elevation="1" Style="border-radius: 8px; background-color: #f9fafb;">
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" Class="fw-bold py-3 rounded-pill">Save Product</MudButton>
+                    </MudPaper>
+                    
                 </MudItem>
             </MudGrid>
         </EditForm>
-    </MudPaper>
+        
         </ChildContent>
     </ErrorBoundary>
 </MudContainer>
@@ -97,6 +162,9 @@
     private List<CategoryDto> _subCategories = new();
     private int _selectedCategoryId;
     private int _selectedSubCategoryId;
+    
+    private IReadOnlyCollection<string> _selectedSizes = new List<string>();
+    private readonly string[] _availableSizeOptions = { "X-Small", "Small", "Medium", "Large", "X-Large", "XX-Large", "One Size" };
 
     protected override async Task OnInitializedAsync()
     {
@@ -141,14 +209,22 @@
             {
                 if (!string.IsNullOrWhiteSpace(cv.ColorName) && !string.IsNullOrWhiteSpace(cv.ImageUrl))
                 {
-                    _product.ColorImages[cv.ColorName] = cv.ImageUrl;
+                    if (_product.ColorImages.ContainsKey(cv.ColorName))
+                    {
+                        _product.ColorImages[cv.ColorName] += "," + cv.ImageUrl;
+                    }
+                    else
+                    {
+                        _product.ColorImages[cv.ColorName] = cv.ImageUrl;
+                    }
                 }
             }
 
-            // Set default image to the first color's image if available
+            // Set default image to the first color's first image if available
             if (_product.ColorImages.Any())
             {
-                _product.ImageUrl = _product.ColorImages.Values.First();
+                var firstImageStr = _product.ColorImages.Values.First();
+                _product.ImageUrl = firstImageStr.Split(',', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? firstImageStr;
                 _product.Color = _product.ColorImages.Keys.First();
             }
             else
@@ -156,12 +232,16 @@
                 _product.ImageUrl = "/images/dummy-product.avif";
             }
 
+            _product.AvailableColors = string.Join(",", _product.ColorImages.Keys);
+            _product.AvailableSizes = string.Join(",", _selectedSizes);
+
             await ProductService.CreateProductAsync(_product);
             Snackbar.Add($"Product '{_product.Name}' created successfully!", Severity.Success);
             
             // Reset form
             _product = new ProductDto();
             _colorVariants.Clear();
+            _selectedSizes = new List<string>();
             _selectedCategoryId = 0;
             _selectedSubCategoryId = 0;
             _subCategories.Clear();
@@ -176,5 +256,36 @@
     {
         public string ColorName { get; set; } = string.Empty;
         public string ImageUrl { get; set; } = string.Empty;
+    }
+
+    private async Task UploadImageAsync(IBrowserFile file, ColorVariantInput cv)
+    {
+        try
+        {
+            if (file == null) return;
+            
+            // Ensure uploads directory exists
+            var uploadsFolder = Path.Combine(WebHostEnvironment.WebRootPath, "images", "products");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+            
+            // Generate unique filename
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+            
+            // Save file
+            await using var fileStream = new FileStream(filePath, FileMode.Create);
+            await file.OpenReadStream(10 * 1024 * 1024).CopyToAsync(fileStream); // 10MB max
+            
+            // Set URL
+            cv.ImageUrl = $"/images/products/{fileName}";
+            Snackbar.Add("Image uploaded successfully!", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Upload failed: {ex.Message}", Severity.Error);
+        }
     }
 }

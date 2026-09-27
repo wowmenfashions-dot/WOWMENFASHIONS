@@ -130,6 +130,10 @@
                                     {
                                         <MudText Typo="Typo.caption" Class="d-block text-muted">Color: @item.SelectedColor</MudText>
                                     }
+                                    @if (!string.IsNullOrEmpty(item.SelectedSize))
+                                    {
+                                        <MudText Typo="Typo.caption" Class="d-block text-muted">Size: @item.SelectedSize</MudText>
+                                    }
                                     <MudText Typo="Typo.caption">Qty: @item.Quantity</MudText>
                                 </MudItem>
                                 <MudItem xs="3" Class="d-flex justify-end">
@@ -303,7 +307,8 @@
                     ProductName = i.ProductName ?? "Unknown Product",
                     Price = i.UnitPrice,
                     Quantity = i.Quantity,
-                    SelectedColor = i.SelectedColor
+                    SelectedColor = i.SelectedColor,
+                    SelectedSize = i.SelectedSize
                 }).ToList()
             };
 

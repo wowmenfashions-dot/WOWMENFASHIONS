@@ -6,54 +6,64 @@
 
 <PageTitle>@_pageTitle - WOWMENFASHIONS</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-1 pb-4">
+<MudContainer MaxWidth="MaxWidth.Large" Class="pt-1 pb-4">
     <!-- Breadcrumb Area -->
     <MudBreadcrumbs Items="_breadcrumbs" Class="px-0 mb-2" />
 
-    <!-- Filters Row (Mobile First, Stacks on small screens) -->
-    <MudPaper Elevation="0" Class="pa-2 mb-4 border-bottom" Style="background-color: transparent !important;">
-        <MudGrid Spacing="2" Justify="Justify.FlexStart" Class="align-end">
-            
-            <!-- Primary Categories -->
-            <MudItem xs="12" sm="6" md="3">
-                <MudSelect T="string" Label="Category" Value="@Slug" ValueChanged="NavigateToCategory" Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
-                    @foreach (var cat in _primaryCategories)
-                    {
-                        <MudSelectItem Value="@cat.Slug">@cat.Name</MudSelectItem>
-                    }
-                </MudSelect>
-            </MudItem>
+    @if (Slug.Equals("mens", StringComparison.OrdinalIgnoreCase))
+    {
+        <!-- Promotional Banner -->
+        <MudPaper Elevation="0" Class="mb-4 overflow-hidden rounded-lg">
+            <img src="images/banners/mens-promotional-banner.avif" alt="Men's Collection" style="width: 100%; max-height: 400px; object-fit: cover;" onerror="this.onerror=null; this.src='https://picsum.photos/seed/mensbanner/1200/400.avif';" />
+        </MudPaper>
+    }
 
-            <!-- Subcategories (Cascading) -->
-            @if (_subCategories.Any())
-            {
+    <!-- Filters Row (Collapsible) -->
+    <MudExpansionPanels Class="mb-4" Elevation="0">
+        <MudExpansionPanel Text="Filter Products" Class="border rounded-lg" Style="background-color: transparent !important;">
+            <MudGrid Spacing="2" Justify="Justify.FlexStart" Class="align-end">
+                
+                <!-- Primary Categories -->
                 <MudItem xs="12" sm="6" md="3">
-                    <MudSelect T="string" Label="Subcategory" Value="@_selectedSubcategorySlug" ValueChanged="SetSubcategoryFilter" Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
-                        <MudSelectItem T="string" Value="@(string.Empty)">All @(_currentCategory?.Name)</MudSelectItem>
-                        @foreach (var sub in _subCategories)
+                    <MudSelect T="string" Label="Category" Value="@Slug" ValueChanged="NavigateToCategory" Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
+                        @foreach (var cat in _primaryCategories)
                         {
-                            <MudSelectItem T="string" Value="@sub.Slug">@sub.Name</MudSelectItem>
+                            <MudSelectItem Value="@cat.Slug">@cat.Name</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
-            }
 
-            <!-- Price Range -->
-            <MudItem xs="12" sm="6" md="3">
-                <div class="d-flex align-center mt-1">
-                    <MudText Typo="Typo.caption" Class="me-2 text-nowrap">Up to ₹@_maxPrice</MudText>
-                    <div class="px-4 flex-grow-1">
-                        <MudSlider @bind-Value="_maxPrice" Min="0" Max="3000" Step="50" ValueLabel="true" Color="Color.Primary" Size="Size.Small" />
+                <!-- Subcategories (Cascading) -->
+                @if (_subCategories.Any())
+                {
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudSelect T="string" Label="Subcategory" Value="@_selectedSubcategorySlug" ValueChanged="SetSubcategoryFilter" Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
+                            <MudSelectItem T="string" Value="@(string.Empty)">All @(_currentCategory?.Name)</MudSelectItem>
+                            @foreach (var sub in _subCategories)
+                            {
+                                <MudSelectItem T="string" Value="@sub.Slug">@sub.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                }
+
+                <!-- Price Range -->
+                <MudItem xs="12" sm="6" md="3">
+                    <div class="d-flex align-center mt-1">
+                        <MudText Typo="Typo.caption" Class="me-2 text-nowrap">Up to ₹@_maxPrice</MudText>
+                        <div class="px-4 flex-grow-1">
+                            <MudSlider @bind-Value="_maxPrice" Min="0" Max="3000" Step="50" ValueLabel="true" Color="Color.Primary" Size="Size.Small" />
+                        </div>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Class="ms-2 rounded-pill" OnClick="ApplyFilters">Apply</MudButton>
                     </div>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Class="ms-2 rounded-pill" OnClick="ApplyFilters">Apply</MudButton>
-                </div>
-            </MudItem>
+                </MudItem>
 
-        </MudGrid>
-    </MudPaper>
+            </MudGrid>
+        </MudExpansionPanel>
+    </MudExpansionPanels>
 
     <!-- Product Grid Header -->
-    <div class="d-flex align-center mb-4">
+    <div class="d-flex flex-wrap align-center justify-space-between mb-4 gap-2">
         <MudText Typo="Typo.caption" Class="text-muted">Showing @(_products.Count()) of @_totalItems results</MudText>
         <MudSpacer />
         <div style="width: 200px;">
@@ -81,7 +91,7 @@
         <MudGrid Spacing="4">
             @foreach (var product in GetSortedProducts())
             {
-                <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudItem @key="product.Id" xs="12" sm="4" md="3" lg="3" xl="2">
                     <ProductCard Product="product" />
                 </MudItem>
             }

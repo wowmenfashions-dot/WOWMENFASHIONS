@@ -162,8 +162,8 @@ public class ProductService : IProductService
             DECLARE @NextId INT;
             SELECT @NextId = ISNULL(MAX(Id), 0) + 1 FROM Products;
             
-            INSERT INTO Products (Id, CategoryId, Category, Name, Description, Price, OriginalPrice, ImageUrl, Color)
-            VALUES (@NextId, @CategoryId, @Category, @Name, @Description, @Price, @OriginalPrice, @ImageUrl, @Color);
+            INSERT INTO Products (Id, CategoryId, Category, Name, Description, Specifications, ShippingReturns, Price, OriginalPrice, ImageUrl, Color, AvailableSizes)
+            VALUES (@NextId, @CategoryId, @Category, @Name, @Description, @Specifications, @ShippingReturns, @Price, @OriginalPrice, @ImageUrl, @Color, @AvailableSizes);
             
             SELECT @NextId;";
             
@@ -196,8 +196,9 @@ public class ProductService : IProductService
         var query = @"
             UPDATE Products SET 
                 CategoryId = @CategoryId, Category = @Category, Name = @Name, 
-                Description = @Description, Price = @Price, OriginalPrice = @OriginalPrice, 
-                ImageUrl = @ImageUrl, Color = @Color
+                Description = @Description, Specifications = @Specifications, ShippingReturns = @ShippingReturns, 
+                Price = @Price, OriginalPrice = @OriginalPrice, 
+                ImageUrl = @ImageUrl, Color = @Color, AvailableSizes = @AvailableSizes
             WHERE Id = @Id";
         await connection.ExecuteAsync(query, product);
 

@@ -46,6 +46,10 @@
                                     <div>
                                         <MudText Typo="Typo.subtitle1" Class="fw-bold">@context.Product.Name</MudText>
                                         <MudText Typo="Typo.caption" Color="Color.Default" Class="text-muted">Color: @(context.SelectedColor ?? context.Product.Color)</MudText>
+                                        @if (!string.IsNullOrEmpty(context.SelectedSize))
+                                        {
+                                            <MudText Typo="Typo.caption" Color="Color.Default" Class="text-muted ms-3">Size: @context.SelectedSize</MudText>
+                                        }
                                     </div>
                                 </div>
                             </MudTd>
@@ -135,7 +139,8 @@
                         ProductId = item.ProductId,
                         Quantity = item.Quantity,
                         Product = product,
-                        SelectedColor = item.SelectedColor
+                        SelectedColor = item.SelectedColor,
+                        SelectedSize = item.SelectedSize
                     });
                 }
             }
@@ -178,6 +183,7 @@
         public int Quantity { get; set; }
         public ProductDto Product { get; set; } = null!;
         public string? SelectedColor { get; set; }
+        public string? SelectedSize { get; set; }
 
         public string GetImageUrl()
         {

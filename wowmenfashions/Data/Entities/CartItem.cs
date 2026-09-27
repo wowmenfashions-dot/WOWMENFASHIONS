@@ -11,6 +11,7 @@ public class CartItem
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public string? SelectedColor { get; set; }
+    public string? SelectedSize { get; set; }
     
     // Additional properties that might be joined from Product
     public string? ProductName { get; set; }

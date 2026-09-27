@@ -1,9 +1,14 @@
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 CREATE OR ALTER PROCEDURE [dbo].[Cart_AddItem]
     @GuestCartId UNIQUEIDENTIFIER = NULL,
     @CustomerId INT = NULL,
     @ProductId INT,
     @Quantity INT,
-    @SelectedColor NVARCHAR(50) = NULL
+    @SelectedColor NVARCHAR(50) = NULL,
+    @SelectedSize NVARCHAR(50) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -33,18 +38,18 @@ BEGIN
         VALUES (@CartId, @CustomerId, @GuestCartId, GETUTCDATE(), GETUTCDATE());
     END
 
-    -- Check if product already exists in cart
-    IF EXISTS (SELECT 1 FROM CartItems WHERE CartId = @CartId AND ProductId = @ProductId)
+    -- Check if product already exists in cart with same color and size
+    IF EXISTS (SELECT 1 FROM CartItems WHERE CartId = @CartId AND ProductId = @ProductId AND ISNULL(SelectedColor, '') = ISNULL(@SelectedColor, '') AND ISNULL(SelectedSize, '') = ISNULL(@SelectedSize, ''))
     BEGIN
         UPDATE CartItems
         SET Quantity = Quantity + @Quantity,
             UpdatedAt = GETUTCDATE()
-        WHERE CartId = @CartId AND ProductId = @ProductId;
+        WHERE CartId = @CartId AND ProductId = @ProductId AND ISNULL(SelectedColor, '') = ISNULL(@SelectedColor, '') AND ISNULL(SelectedSize, '') = ISNULL(@SelectedSize, '');
     END
     ELSE
     BEGIN
-        INSERT INTO CartItems (CartId, ProductId, Quantity, CreatedAt, UpdatedAt, SelectedColor)
-        VALUES (@CartId, @ProductId, @Quantity, GETUTCDATE(), GETUTCDATE(), @SelectedColor);
+        INSERT INTO CartItems (CartId, ProductId, Quantity, CreatedAt, UpdatedAt, SelectedColor, SelectedSize)
+        VALUES (@CartId, @ProductId, @Quantity, GETUTCDATE(), GETUTCDATE(), @SelectedColor, @SelectedSize);
     END
     
     -- Return the CartId and GuestCartId (useful if a new guest cart was created)

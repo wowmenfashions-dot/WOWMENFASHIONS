@@ -8,7 +8,6 @@ using wowmenfashions.Data;
 using wowmenfashions.Repositories;
 using wowmenfashions.Services;
 using wowmenfashions.Models;
-using wowmenfashions.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -138,6 +137,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
 
+app.UseStaticFiles();
 app.MapStaticAssets();
 app.MapControllers();
 app.UseHangfireDashboard("/admin/jobs"); // Secured by default for local, needs auth filter for prod

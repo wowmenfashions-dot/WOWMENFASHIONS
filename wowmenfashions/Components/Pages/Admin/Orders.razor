@@ -13,8 +13,17 @@
         <MudText Typo="Typo.h4">Order Management</MudText>
         <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/admin">Products</MudButton>
     </div>
+
+    <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" Class="mb-4" ActivePanelIndexChanged="OnTabChanged">
+        <MudTabPanel Text="All" />
+        <MudTabPanel Text="PaymentCompleted" />
+        <MudTabPanel Text="Processing" />
+        <MudTabPanel Text="InTransit" />
+        <MudTabPanel Text="Delivered" />
+        <MudTabPanel Text="Cancelled" />
+    </MudTabs>
     
-    <MudDataGrid T="OrderDto" Items="@_orders" ReadOnly="false" EditMode="DataGridEditMode.Form"
+    <MudDataGrid T="OrderDto" Items="@FilteredOrders" ReadOnly="false" EditMode="DataGridEditMode.Form"
                  CommittedItemChanges="@( async (OrderDto item) => { await CommittedItemChanges(item); return default; } )"
                  Bordered="true" Dense="true">
         <ToolBarContent>
@@ -22,6 +31,7 @@
             <MudSpacer />
         </ToolBarContent>
         <Columns>
+            <HierarchyColumn T="OrderDto" />
             <PropertyColumn Property="x => x.Id" Title="ID" Editable="false" />
             <PropertyColumn Property="x => x.OrderDate" Title="Date" Editable="false" />
             <PropertyColumn Property="x => x.TotalAmount" Title="Total" Editable="false" />
@@ -55,15 +65,62 @@
                 </CellTemplate>
             </TemplateColumn>
         </Columns>
+        <ChildRowContent>
+            <MudCard Elevation="0" Class="pa-4 bg-light">
+                <MudText Typo="Typo.subtitle1" Class="fw-bold mb-2">Order Items:</MudText>
+                @if (context.Item.Items != null && context.Item.Items.Any())
+                {
+                    <MudTable Items="@context.Item.Items" Dense="true" Elevation="0">
+                        <HeaderContent>
+                            <MudTh>Product</MudTh>
+                            <MudTh>Color</MudTh>
+                            <MudTh>Size</MudTh>
+                            <MudTh>Qty</MudTh>
+                            <MudTh>Price</MudTh>
+                        </HeaderContent>
+                        <RowTemplate Context="itemContext">
+                            <MudTd DataLabel="Product">@itemContext.ProductName</MudTd>
+                            <MudTd DataLabel="Color">@(string.IsNullOrEmpty(itemContext.SelectedColor) ? "N/A" : itemContext.SelectedColor)</MudTd>
+                            <MudTd DataLabel="Size">@(string.IsNullOrEmpty(itemContext.SelectedSize) ? "N/A" : itemContext.SelectedSize)</MudTd>
+                            <MudTd DataLabel="Qty">@itemContext.Quantity</MudTd>
+                            <MudTd DataLabel="Price">@itemContext.Price.ToString("C")</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2">No items found for this order.</MudText>
+                }
+            </MudCard>
+        </ChildRowContent>
     </MudDataGrid>
 </MudContainer>
 
 @code {
     private IEnumerable<OrderDto> _orders = new List<OrderDto>();
+    private string _activeTab = "All";
+
+    private IEnumerable<OrderDto> FilteredOrders => _activeTab == "All" 
+        ? _orders 
+        : _orders.Where(o => o.Status == _activeTab);
 
     protected override async Task OnInitializedAsync()
     {
         await LoadOrders();
+    }
+
+    private void OnTabChanged(int index)
+    {
+        _activeTab = index switch
+        {
+            0 => "All",
+            1 => "PaymentCompleted",
+            2 => "Processing",
+            3 => "InTransit",
+            4 => "Delivered",
+            5 => "Cancelled",
+            _ => "All"
+        };
     }
 
     private async Task LoadOrders()

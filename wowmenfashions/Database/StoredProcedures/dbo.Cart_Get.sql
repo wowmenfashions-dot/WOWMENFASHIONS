@@ -29,6 +29,8 @@ BEGIN
         ci.Quantity, 
         ci.CreatedAt, 
         ci.UpdatedAt,
+        ci.SelectedColor,
+        ci.SelectedSize,
         p.Name AS ProductName,
         p.Price AS UnitPrice,
         p.ImageUrl AS ProductImageUrl

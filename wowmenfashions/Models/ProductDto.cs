@@ -9,11 +9,19 @@ public class ProductDto
     public string Category { get; set; } = string.Empty; // Deprecated, but keeping for compatibility
     public int CategoryId { get; set; }
     public string Description { get; set; } = string.Empty;
+    public string Specifications { get; set; } = string.Empty;
+    public string ShippingReturns { get; set; } = string.Empty;
     public string Color { get; set; } = string.Empty; // Single color fallback
     public string? AvailableColors { get; set; }
     public List<string> AvailableColorsList 
     { 
         get => string.IsNullOrEmpty(AvailableColors) ? new List<string>() : AvailableColors.Split(',').Select(c => c.Trim()).ToList();
+    }
+
+    public string? AvailableSizes { get; set; }
+    public List<string> AvailableSizesList 
+    {
+        get => string.IsNullOrEmpty(AvailableSizes) ? new List<string>() : AvailableSizes.Split(',').Select(s => s.Trim()).ToList();
     }
     public decimal Price { get; set; }
     public decimal? OriginalPrice { get; set; }

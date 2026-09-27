@@ -80,7 +80,8 @@ namespace wowmenfashions.Services
                             ProductName = item.ProductName,
                             Price = item.Price,
                             Quantity = item.Quantity,
-                            SelectedColor = item.SelectedColor
+                            SelectedColor = item.SelectedColor,
+                            SelectedSize = item.SelectedSize
                         },
                         transaction: transaction,
                         commandType: CommandType.StoredProcedure);

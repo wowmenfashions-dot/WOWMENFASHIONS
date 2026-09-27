@@ -37,104 +37,263 @@
         <MudBreadcrumbs Items="_breadcrumbs" Class="px-0 mb-0" />
         
         <MudPaper Elevation="0" Class="pa-2 pa-md-4 bg-transparent">
-            <MudGrid Spacing="2">
-                <!-- Product Image -->
+            <MudGrid Spacing="4">
+                <!-- Left Column: Images -->
                 <MudItem xs="12" md="6">
-                    <MudCard Elevation="0" Class="overflow-hidden rounded-lg">
-                        <MudCarousel Class="mud-width-full zoom-container" Style="height:400px;" ShowArrows="@(_product.AdditionalImages.Count > 0)" ShowBullets="@(_product.AdditionalImages.Count > 0)" EnableSwipeGesture="true" AutoCycle="false" TData="object">
-                            <MudCarouselItem Transition="Transition.Slide">
-                                <img src="@_currentImageUrl" alt="@_product.Name" class="zoom-img" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='https://picsum.photos/seed/fallback/400/400.avif';" />
-                            </MudCarouselItem>
-                            @if (_product.AdditionalImages != null)
-                            {
-                                @foreach (var img in _product.AdditionalImages)
-                                {
-                                    <MudCarouselItem Transition="Transition.Slide">
-                                        <img src="@img" alt="@_product.Name" class="zoom-img" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='https://picsum.photos/seed/fallback/400/400.avif';" />
-                                    </MudCarouselItem>
-                                }
-                            }
-                        </MudCarousel>
-                    </MudCard>
-                </MudItem>
-
-                <!-- Product Info -->
-                <MudItem xs="12" md="6">
-                    <MudText Typo="Typo.caption" Color="Color.Default" Class="text-uppercase mb-1 d-block fw-bold tracking-widest">@_product.Category</MudText>
-                    <MudText Typo="Typo.h4" Class="fw-bold mb-2" Style="font-family: 'Inter', sans-serif;">@_product.Name</MudText>
-                    
-                    <div class="d-flex align-center mb-4">
-                        @if (_product.IsOnSale)
-                        {
-                            <MudText Typo="Typo.h6" Style="text-decoration: line-through" Class="me-2 text-muted">@_product.OriginalPrice?.ToString("C")</MudText>
-                        }
-                        <MudText Typo="Typo.h5" Color="@(_product.IsOnSale ? Color.Error : Color.Default)" Class="fw-bold">@_product.Price.ToString("C")</MudText>
-                        
-                        @if (_product.IsOnSale)
-                        {
-                            <MudChip T="string" Color="Color.Error" Size="Size.Small" Class="ms-4 px-3 fw-bold">SALE</MudChip>
-                        }
+                    <!-- Main Image with Zoom Trigger -->
+                    <div class="mb-4 position-relative border" style="aspect-ratio: 1/1; background-color: transparent; cursor: zoom-in;" @onclick="@(() => OpenZoom(_currentImageUrl))">
+                        <img src="@(string.IsNullOrWhiteSpace(_currentImageUrl) ? "https://placehold.co/600x600/FFFFFF/1E1E1E.avif?text=No+Image" : _currentImageUrl)" alt="@_product.Name" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.onerror=null; this.src='https://placehold.co/600x600/FFFFFF/1E1E1E.avif?text=No+Image';" />
+                        <div class="position-absolute" style="bottom: 10px; right: 10px;">
+                            <MudIconButton Icon="@Icons.Material.Filled.Search" Color="Color.Dark" Style="background-color: rgba(255,255,255,0.8); border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3);" OnClick="@(() => OpenZoom(_currentImageUrl))" />
+                        </div>
                     </div>
 
-                    <MudText Typo="Typo.body2" Class="mb-4 text-muted" Style="line-height: 1.5;">
+                    <!-- Thumbnails Grid -->
+                    @if (_displayedImages != null && _displayedImages.Count > 1)
+                    {
+                        <MudGrid Spacing="2">
+                            @foreach (var img in _displayedImages)
+                            {
+                                <MudItem xs="6">
+                                    <div class="position-relative border cursor-pointer" @onclick="@(() => OpenZoom(img))">
+                                        <img src="@img" style="width: 100%; height: auto; object-fit: cover;" onerror="this.onerror=null; this.src='https://picsum.photos/seed/fallback/600/600.avif';" />
+                                        <div class="position-absolute" style="bottom: 10px; right: 10px;">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Search" Color="Color.Dark" Style="background-color: rgba(255,255,255,0.8); border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3);" Size="Size.Small" OnClick="@(() => OpenZoom(img))" />
+                                        </div>
+                                    </div>
+                                </MudItem>
+                            }
+                        </MudGrid>
+                    }
+                </MudItem>
+
+                <!-- Right Column: Product Info Boxed Layout -->
+                <MudItem xs="12" md="6">
+                    
+                    <!-- Box 1: Title and Header -->
+                    <MudPaper Elevation="0" Class="border rounded pa-4 mb-4">
+                        <MudChip T="string" Color="Color.Info" Size="Size.Small" Class="mb-2 rounded-1 fw-bold px-2 py-0" Style="font-size: 0.7rem; height: 20px;">Online Only</MudChip>
+                        <MudText Typo="Typo.h5" Class="fw-bold mb-1">@_product.Name</MudText>
+                        <MudText Typo="Typo.caption" Class="text-muted d-block mb-2">Item @_product.Id.ToString("0000000")</MudText>
+                        <div class="d-flex align-center">
+                            <MudRating SelectedValue="4" Max="5" Size="Size.Small" ReadOnly="true" />
+                            <MudText Typo="Typo.caption" Color="Color.Info" Class="ms-2">4.3 (3)</MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Info" Class="ms-4">Write a review</MudText>
+                        </div>
+                    </MudPaper>
+
+                    <!-- Box 2: Price -->
+                    <MudPaper Elevation="0" Class="border rounded pa-4 mb-4">
+                        <MudText Typo="Typo.h4" Class="fw-bold mb-2" Style="color: #333;">@_product.Price.ToString("C")</MudText>
+                        <MudCheckBox T="bool" Label="Compare" Dense="true" Size="Size.Small" />
+                    </MudPaper>
+
+                    <!-- Box 3: Variations (Colors & Sizes) -->
+                    <MudPaper Elevation="0" Class="border rounded pa-4 mb-4">
+                        @if (_product.AvailableColorsList != null && _product.AvailableColorsList.Any())
+                        {
+                            <div class="mb-4">
+                                <MudText Typo="Typo.body2" Class="mb-2">Colour: <strong>@(_selectedColor ?? "Select")</strong></MudText>
+                                <div class="d-flex gap-2">
+                                    @foreach (var color in _product.AvailableColorsList)
+                                    {
+                                        <div class="color-box @(_selectedColor as string == color ? "selected" : "")" 
+                                             style="background-color: @color.ToLower(); width: 36px; height: 36px; border: @(_selectedColor as string == color ? "2px solid #000" : "1px solid #ccc"); cursor: pointer; padding: 2px; border-radius: 2px;" 
+                                             title="@color"
+                                             @onclick="@(() => SelectColor(color))">
+                                             <div style="background-color: @color.ToLower(); width: 100%; height: 100%;"></div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        @if (_product.AvailableSizesList != null && _product.AvailableSizesList.Any())
+                        {
+                            <div class="mb-2">
+                                <MudText Typo="Typo.body2" Class="mb-2">Men's Size: <strong>@(_selectedSize ?? "Select Size")</strong></MudText>
+                                <div class="d-flex flex-wrap gap-2">
+                                    @foreach (var size in _product.AvailableSizesList)
+                                    {
+                                        <div class="size-box @(_selectedSize == size ? "selected" : "")" 
+                                             style="border: @(_selectedSize == size ? "2px solid #0060a9" : "1px solid #ccc"); padding: 8px 12px; cursor: pointer; border-radius: 2px; min-width: 48px; text-align: center;"
+                                             @onclick="@(() => SelectSize(size))">
+                                            <MudText Typo="Typo.body2" Class="@(_selectedSize == size ? "fw-bold" : "")">@size</MudText>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </MudPaper>
+
+
+
+                    <!-- Box 5: Add to Cart -->
+                    <MudPaper Elevation="0" Class="border rounded pa-4 mb-4 d-flex align-center gap-3">
+                        <!-- Quantity Selector Box -->
+                        <div class="d-flex align-center border rounded" style="height: 40px;">
+                            <MudIconButton Icon="@Icons.Material.Filled.Remove" Size="Size.Small" OnClick="@(() => { if(_quantity > 1) _quantity--; })" />
+                            <div class="px-2" style="width: 40px; text-align: center;">@_quantity</div>
+                            <MudIconButton Icon="@Icons.Material.Filled.Add" Size="Size.Small" OnClick="@(() => { if(_quantity < 10) _quantity++; })" />
+                        </div>
+                        <!-- Add Button -->
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddToCartAsync" Class="flex-grow-1 text-none" Style="background-color: #0060a9; height: 40px; border-radius: 2px;">
+                            <MudIcon Icon="@Icons.Material.Filled.Add" Size="Size.Small" Class="me-1" /> Add
+                        </MudButton>
+                        <MudIconButton Icon="@Icons.Material.Outlined.FavoriteBorder" Variant="Variant.Outlined" Size="Size.Small" Style="height: 40px; width: 40px; border-radius: 2px;" />
+                    </MudPaper>
+
+                    <!-- Box 6: Description -->
+                    <MudPaper Elevation="0" Class="border rounded pa-4 mb-4">
                         @if (!string.IsNullOrEmpty(_product.Description))
                         {
-                            @((MarkupString)_product.Description)
+                            <MudText Typo="Typo.body2" Style="color: #333;">@((MarkupString)_product.Description)</MudText>
                         }
                         else
                         {
-                            @("No description available for this product.")
+                            <ul style="list-style-type: disc; color: #333;" class="ps-4">
+                                <li><MudText Typo="Typo.body2">Stretch woven fabric</MudText></li>
+                                <li><MudText Typo="Typo.body2">Short sleeve</MudText></li>
+                                <li><MudText Typo="Typo.body2">Button-front closure</MudText></li>
+                            </ul>
                         }
-                    </MudText>
-
-                    <MudDivider Class="mb-4" />
-
-                    <!-- Add to Cart Action -->
-                    <div class="d-flex flex-wrap align-center gap-2 mb-4">
-                        <MudNumericField @bind-Value="_quantity" Min="1" Max="10" Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width: 100px;" />
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Filled.ShoppingCart" OnClick="AddToCartAsync" Class="px-4 py-2 rounded-pill fw-bold flex-grow-1 flex-md-grow-0">
-                            Add to Cart
-                        </MudButton>
-                    </div>
-
-                    @if (_product.AvailableColorsList != null && _product.AvailableColorsList.Any())
-                    {
-                        <div class="mb-4">
-                            <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold">Select Color:</MudText>
-                            <div class="d-flex gap-2">
-                                @foreach (var color in _product.AvailableColorsList)
-                                {
-                                    <div class="color-box @(_selectedColor as string == color ? "selected" : "")" 
-                                         style="background-color: @color.ToLower();" 
-                                         title="@color"
-                                         @onclick="@(() => SelectColor(color))">
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    }
-                    else if (!string.IsNullOrEmpty(_product.Color))
-                    {
-                        <div class="mb-4">
-                            <MudText Typo="Typo.subtitle2" Class="mb-2 fw-bold">Color:</MudText>
-                            <div class="d-flex gap-2">
-                                <div class="color-box selected" 
-                                     style="background-color: @_product.Color.ToLower();" 
-                                     title="@_product.Color">
-                                </div>
-                            </div>
-                        </div>
-                    }
-                    <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-2">
-                        <strong>SKU:</strong> @(_product.Id.ToString("00000"))
-                    </MudText>
-                    <MudText Typo="Typo.body2" Color="Color.Default">
-                        <strong>Category:</strong> <MudLink Href="@($"/category/{_product.Category.ToLower()}")" Color="Color.Dark">@_product.Category</MudLink>
-                    </MudText>
+                        <MudText Typo="Typo.body2" Class="text-decoration-underline mt-4" Style="cursor: pointer;">View Product Details</MudText>
+                    </MudPaper>
+                    
                 </MudItem>
             </MudGrid>
+
+            <!-- Bottom Accordions -->
+            <div class="mt-8">
+                <MudExpansionPanels MultiExpansion="true" Elevation="0" Class="border rounded-0">
+                    <MudExpansionPanel Expanded="true" Class="border-bottom px-0">
+                        <TitleContent>
+                            <MudText Typo="Typo.subtitle1" Style="font-weight: 700; color: #333;">Product Details</MudText>
+                        </TitleContent>
+                        <ChildContent>
+                            <div class="py-2">
+                                @if (!string.IsNullOrEmpty(_product.Description))
+                                {
+                                    <MudText Typo="Typo.body2" Class="mb-4" Style="color: #555;">@((MarkupString)_product.Description)</MudText>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2" Class="mb-4" Style="color: #555;">The IGNITE Articulate is the most versatile performance shoe Puma Golf has ever made. Between the Articulation Geometry on the outsole, midsole, and upper, to the cushioning of the Ignite foam, every detail of these spiked shoes has been meticulously designed to move with the golfers feet during the swing.</MudText>
+                                }
+
+                                <MudText Typo="Typo.subtitle2" Style="font-weight: 700; color: #333;" Class="mt-4 mb-2">Features:</MudText>
+                                <ul style="list-style-type: disc; color: #555;" class="ps-6 mb-4">
+                                    <li><MudText Typo="Typo.body2">Ignite Foam</MudText></li>
+                                    <li><MudText Typo="Typo.body2">8-Cleat Traction</MudText></li>
+                                    <li><MudText Typo="Typo.body2">PWRCAGE</MudText></li>
+                                </ul>
+
+                                <MudText Typo="Typo.subtitle2" Style="font-weight: 700; color: #333;" Class="mt-4 mb-2">Warranty:</MudText>
+                                <ul style="list-style-type: disc; color: #555;" class="ps-6 mb-4">
+                                    <li><MudText Typo="Typo.body2">One Year Waterproof Warranty</MudText></li>
+                                </ul>
+
+                                <MudText Typo="Typo.subtitle2" Style="font-weight: 700; color: #333;" Class="mt-4 mb-2">Customer Service:</MudText>
+                                <ul style="list-style-type: disc; color: #555;" class="ps-6 mb-4">
+                                    <li><MudText Typo="Typo.body2">customerservice-ca@cobragolf.com</MudText></li>
+                                    <li><MudText Typo="Typo.body2">1-800-540-3565</MudText></li>
+                                </ul>
+                            </div>
+                        </ChildContent>
+                    </MudExpansionPanel>
+
+                    <MudExpansionPanel Class="border-bottom px-0">
+                        <TitleContent>
+                            <MudText Typo="Typo.subtitle1" Style="font-weight: 700; color: #333;">Specifications</MudText>
+                        </TitleContent>
+                        <ChildContent>
+                            <div class="py-2">
+                                @if (!string.IsNullOrEmpty(_product.Specifications))
+                                {
+                                    <MudText Typo="Typo.body2" Style="color: #555;">@((MarkupString)_product.Specifications)</MudText>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2" Style="color: #555;">No specifications available for this product.</MudText>
+                                }
+                            </div>
+                        </ChildContent>
+                    </MudExpansionPanel>
+
+                    <MudExpansionPanel Class="border-bottom px-0">
+                        <TitleContent>
+                            <MudText Typo="Typo.subtitle1" Style="font-weight: 700; color: #333;">Shipping & Returns</MudText>
+                        </TitleContent>
+                        <ChildContent>
+                            <div class="py-2">
+                                @if (!string.IsNullOrEmpty(_product.ShippingReturns))
+                                {
+                                    <MudText Typo="Typo.body2" Style="color: #555;">@((MarkupString)_product.ShippingReturns)</MudText>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2" Style="color: #555;">Standard shipping via UPS is included in the quoted price.</MudText>
+                                }
+                            </div>
+                        </ChildContent>
+                    </MudExpansionPanel>
+
+                    <MudExpansionPanel Class="px-0">
+                        <TitleContent>
+                            <MudText Typo="Typo.subtitle1" Style="font-weight: 700; color: #333;">Member Reviews</MudText>
+                        </TitleContent>
+                        <ChildContent>
+                            <div class="py-2">
+                                <MudText Typo="Typo.body2" Style="color: #555;">Reviews will go here.</MudText>
+                            </div>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </div>
         </MudPaper>
     }
+
+    <MudOverlay @bind-Visible="_isZoomVisible" ZIndex="9999" DarkBackground="false" AutoClose="false">
+        <div class="d-flex flex-column bg-white" style="width: 100vw; height: 100vh; max-width: 100vw; max-height: 100vh;">
+            
+            <!-- Main Zoom Image Area -->
+            <div class="flex-grow-1 d-flex align-center justify-center overflow-hidden" style="position: relative; background-color: white;">
+                <MudIconButton Icon="@Icons.Material.Filled.Close" Variant="Variant.Outlined" Color="Color.Dark" Style="position: absolute; top: 20px; right: 20px; border-radius: 50%; z-index: 10001; background-color: white;" OnClick="@(() => _isZoomVisible = false)" />
+                
+                @if (!string.IsNullOrEmpty(_zoomImageUrl))
+                {
+                    <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: auto; padding: 20px;">
+                        <img src="@_zoomImageUrl" alt="Zoomed Product Image" style="max-width: 100%; max-height: 100%; object-fit: contain; transform: scale(@_zoomScale); transition: transform 0.2s ease; transform-origin: center center;" onerror="this.onerror=null; this.src='https://picsum.photos/seed/fallback/600/600.avif';" />
+                    </div>
+                }
+                
+                <!-- Previous/Next Navigation -->
+                <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" Variant="Variant.Outlined" Color="Color.Dark" Style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); border-radius: 50%; z-index: 10001; background-color: white;" OnClick="PrevZoomImage" />
+                <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" Variant="Variant.Outlined" Color="Color.Dark" Style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); border-radius: 50%; z-index: 10001; background-color: white;" OnClick="NextZoomImage" />
+
+                <!-- Zoom Controls -->
+                <div class="d-flex flex-column gap-2" Style="position: absolute; bottom: 20px; right: 20px; z-index: 10001;">
+                    <MudIconButton Icon="@Icons.Material.Filled.Add" Variant="Variant.Outlined" Color="Color.Dark" Class="bg-white" Style="border-radius: 50%; background-color: white;" OnClick="ZoomInImage" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Remove" Variant="Variant.Outlined" Color="Color.Dark" Class="bg-white" Style="border-radius: 50%; background-color: white;" OnClick="ZoomOutImage" />
+                </div>
+            </div>
+
+            <!-- Bottom Thumbnails -->
+            <div class="border-top p-3 d-flex justify-center align-center" style="background-color: #fff; overflow-x: auto;">
+                <div class="d-flex gap-2 align-center">
+                    @if (_displayedImages != null)
+                    {
+                        @foreach (var img in _displayedImages)
+                        {
+                            <div class="border cursor-pointer @(_zoomImageUrl == img ? "border-primary border-2" : "")" style="width: 60px; height: 60px; flex-shrink: 0; border-radius: 4px; overflow: hidden;" @onclick="@(() => _zoomImageUrl = img)">
+                                <img src="@img" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='https://picsum.photos/seed/fallback/600/600.avif';" />
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </MudOverlay>
 </MudContainer>
 
 @code {
@@ -145,8 +304,13 @@
     private ProductDto? _product;
     private int _quantity = 1;
     private object? _selectedColor;
+    private string? _selectedSize;
     private string _currentImageUrl = string.Empty;
     private List<BreadcrumbItem> _breadcrumbs = new();
+    private bool _isZoomVisible = false;
+    private string _zoomImageUrl = string.Empty;
+    private double _zoomScale = 1.0;
+    private List<string> _displayedImages = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -163,6 +327,11 @@
             {
                 SelectColor(_product.Color);
             }
+            
+            if (_product.AvailableSizesList != null && _product.AvailableSizesList.Any())
+            {
+                _selectedSize = _product.AvailableSizesList.First();
+            }
 
             _breadcrumbs = new List<BreadcrumbItem>
             {
@@ -175,18 +344,34 @@
         _isLoading = false;
     }
 
+    private void SelectSize(string size)
+    {
+        _selectedSize = size;
+    }
+
     private void SelectColor(string color)
     {
         _selectedColor = color;
         if (_product != null)
         {
-            if (!string.IsNullOrEmpty(color) && _product.ColorImages != null && _product.ColorImages.TryGetValue(color, out var img))
+            _displayedImages.Clear();
+            if (!string.IsNullOrEmpty(color) && _product.ColorImages != null && _product.ColorImages.TryGetValue(color, out var imgStr) && !string.IsNullOrWhiteSpace(imgStr))
             {
-                _currentImageUrl = img;
+                var urls = imgStr.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
+                _currentImageUrl = urls.FirstOrDefault() ?? string.Empty;
+                _displayedImages.AddRange(urls);
             }
             else
             {
                 _currentImageUrl = _product.ImageUrl;
+                if (!string.IsNullOrWhiteSpace(_product.ImageUrl))
+                {
+                    _displayedImages.Add(_product.ImageUrl);
+                }
+                if (_product.AdditionalImages != null)
+                {
+                    _displayedImages.AddRange(_product.AdditionalImages.Where(i => !string.IsNullOrWhiteSpace(i)));
+                }
             }
         }
     }
@@ -202,40 +387,102 @@
                 return;
             }
 
+            var sizeStr = _selectedSize as string;
+            if (_product.AvailableSizesList != null && _product.AvailableSizesList.Any() && string.IsNullOrEmpty(sizeStr))
+            {
+                Snackbar.Add("Please select a size.", Severity.Warning);
+                return;
+            }
+
             try
             {
-                await CartService.AddItemAsync(_product.Id, _quantity, colorStr);
+                await CartService.AddItemAsync(_product.Id, _quantity, colorStr, sizeStr);
                 Snackbar.Add($"{_quantity} x {_product.Name} added to cart!", Severity.Success);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Snackbar.Add("Failed to add to cart.", Severity.Error);
+                Console.WriteLine(ex.ToString());
+                Snackbar.Add($"Failed to add to cart: {ex.Message}", Severity.Error);
             }
+        }
+    }
+
+    private void OpenZoom(string imageUrl)
+    {
+        _zoomImageUrl = imageUrl;
+        _zoomScale = 1.0;
+        _isZoomVisible = true;
+    }
+
+    private void ZoomInImage()
+    {
+        _zoomScale += 0.25;
+        if (_zoomScale > 3.0) _zoomScale = 3.0;
+    }
+
+    private void ZoomOutImage()
+    {
+        _zoomScale -= 0.25;
+        if (_zoomScale < 1.0) _zoomScale = 1.0;
+    }
+
+    private void NextZoomImage()
+    {
+        if (_displayedImages == null || !_displayedImages.Any()) return;
+        
+        var currentIndex = _displayedImages.IndexOf(_zoomImageUrl);
+        if (currentIndex >= 0 && currentIndex < _displayedImages.Count - 1)
+        {
+            _zoomImageUrl = _displayedImages[currentIndex + 1];
+            _zoomScale = 1.0;
+        }
+        else if (currentIndex == _displayedImages.Count - 1)
+        {
+            _zoomImageUrl = _displayedImages[0];
+            _zoomScale = 1.0;
+        }
+    }
+
+    private void PrevZoomImage()
+    {
+        if (_displayedImages == null || !_displayedImages.Any()) return;
+        
+        var currentIndex = _displayedImages.IndexOf(_zoomImageUrl);
+        if (currentIndex > 0)
+        {
+            _zoomImageUrl = _displayedImages[currentIndex - 1];
+            _zoomScale = 1.0;
+        }
+        else if (currentIndex == 0)
+        {
+            _zoomImageUrl = _displayedImages.Last();
+            _zoomScale = 1.0;
         }
     }
 }
 
 <style>
     .color-box {
-        width: 30px;
-        height: 30px;
+        width: 36px;
+        height: 36px;
         cursor: pointer;
-        border: 2px solid transparent;
-        border-radius: 4px;
-        transition: transform 0.2s;
+        border: 1px solid #ccc;
+        transition: all 0.2s;
     }
     .color-box.selected {
-        border-color: var(--mud-palette-primary);
-        transform: scale(1.1);
-        box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        border: 2px solid #000;
+        padding: 2px;
+        background-clip: content-box;
     }
-    .zoom-container {
-        overflow: hidden;
+    .size-btn {
+        min-width: 60px;
+        border-radius: 0;
     }
-    .zoom-img {
-        transition: transform 0.3s ease;
+    .size-btn.selected {
+        border-width: 2px;
+        font-weight: bold;
     }
-    .zoom-container:hover .zoom-img {
-        transform: scale(1.5);
+    .zoom-overlay {
+        z-index: 9999 !important;
     }
 </style>

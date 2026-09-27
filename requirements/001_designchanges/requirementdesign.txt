@@ -1,0 +1,9 @@
+create a proper technical requirement document.
+keep the UI UX same but implement the functionlities only
+0]Keep the Nav menu collapsed or hidden by default
+make the hamburg icon in red color so that user will not miss it
+1] refer refeence1.jpg - i want to implement the same in these pages http://localhost:5124/product/1
+2]refeence2.jpg - when user select colors it should be like this.
+3] when the user select the zoom icon it should come like this. refence3_zoom.jpg
+
+4] use this image reference4_jpg.jpg and implement in this page http://localhost:5124/category/mens
