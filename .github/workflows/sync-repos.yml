@@ -17,8 +17,12 @@ jobs:
 
       - name: Push to Destination Repository
         env:
+          SYNC_TOKEN: ${{ secrets.SYNC_WOWMEN_RELEASE }}
           DESTINATION_REPO: https://wowmenfashions-dot:${{ secrets.SYNC_WOWMEN_RELEASE }}@github.com/wowmenfashions-dot/WOWMENFASHIONS.git
         run: |
+          if [ -z "$SYNC_TOKEN" ]; then
+            echo "ERROR: The secret SYNC_WOWMEN_RELEASE is empty! Please make sure you added it in Settings -> Secrets and Variables -> Actions."
+            exit 1
+          fi
           git remote add destination $DESTINATION_REPO
-          # We push the local develop branch to the remote release branch
           git push destination HEAD:refs/heads/release --force
