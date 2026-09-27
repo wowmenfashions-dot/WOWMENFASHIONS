@@ -4,6 +4,7 @@
 @attribute [Authorize(Roles = "Admin")]
 @using wowmenfashions.Models
 @using wowmenfashions.Services
+@using ImageMagick
 @inject IProductService ProductService
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
@@ -74,10 +75,18 @@
                         {
                             <MudPaper Elevation="0" Class="pa-4 mb-4" Style="border: 1px solid #e0e0e0; border-radius: 6px;">
                                 <MudGrid Class="align-center">
-                                    <MudItem xs="12" sm="3">
-                                        <MudTextField @bind-Value="cv.ColorName" Label="Color Name (e.g. Red)" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                                    <MudItem xs="12" sm="2">
+                                        <MudColorPicker @bind-Text="cv.ColorName" Label="Color" Variant="Variant.Outlined" Margin="Margin.Dense" DisableAlpha="true" />
                                     </MudItem>
-                                    <MudItem xs="12" sm="5">
+                                    <MudItem xs="12" sm="2">
+                                        <MudSelect @bind-Value="cv.Size" Label="Size" Variant="Variant.Outlined" Margin="Margin.Dense">
+                                            @foreach (var size in _availableSizeOptions)
+                                            {
+                                                <MudSelectItem Value="@size">@size</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </MudItem>
+                                    <MudItem xs="12" sm="4">
                                         <MudTextField @bind-Value="cv.ImageUrl" Label="Image URL" Variant="Variant.Outlined" Margin="Margin.Dense" />
                                     </MudItem>
                                     <MudItem xs="12" sm="3" Class="d-flex align-center">
@@ -165,6 +174,7 @@
     
     private IReadOnlyCollection<string> _selectedSizes = new List<string>();
     private readonly string[] _availableSizeOptions = { "X-Small", "Small", "Medium", "Large", "X-Large", "XX-Large", "One Size" };
+    private readonly string[] _availableColorOptions = { "Black", "White", "Grey", "Navy", "Blue", "Red", "Green", "Yellow", "Orange", "Pink", "Purple", "Brown", "Multicolor", "No-Color" };
 
     protected override async Task OnInitializedAsync()
     {
@@ -209,13 +219,14 @@
             {
                 if (!string.IsNullOrWhiteSpace(cv.ColorName) && !string.IsNullOrWhiteSpace(cv.ImageUrl))
                 {
-                    if (_product.ColorImages.ContainsKey(cv.ColorName))
+                    string key = string.IsNullOrWhiteSpace(cv.Size) ? cv.ColorName.Trim() : $"{cv.ColorName.Trim()}|{cv.Size.Trim()}";
+                    if (_product.ColorImages.ContainsKey(key))
                     {
-                        _product.ColorImages[cv.ColorName] += "," + cv.ImageUrl;
+                        _product.ColorImages[key] += "," + cv.ImageUrl;
                     }
                     else
                     {
-                        _product.ColorImages[cv.ColorName] = cv.ImageUrl;
+                        _product.ColorImages[key] = cv.ImageUrl;
                     }
                 }
             }
@@ -225,14 +236,15 @@
             {
                 var firstImageStr = _product.ColorImages.Values.First();
                 _product.ImageUrl = firstImageStr.Split(',', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? firstImageStr;
-                _product.Color = _product.ColorImages.Keys.First();
+                var firstKey = _product.ColorImages.Keys.First();
+                _product.Color = firstKey.Split('|')[0];
             }
             else
             {
                 _product.ImageUrl = "/images/dummy-product.avif";
             }
 
-            _product.AvailableColors = string.Join(",", _product.ColorImages.Keys);
+            _product.AvailableColors = string.Join(",", _product.ColorImages.Keys.Select(k => k.Split('|')[0]).Distinct());
             _product.AvailableSizes = string.Join(",", _selectedSizes);
 
             await ProductService.CreateProductAsync(_product);
@@ -255,6 +267,7 @@
     public class ColorVariantInput
     {
         public string ColorName { get; set; } = string.Empty;
+        public string Size { get; set; } = string.Empty;
         public string ImageUrl { get; set; } = string.Empty;
     }
 
@@ -271,17 +284,27 @@
                 Directory.CreateDirectory(uploadsFolder);
             }
             
-            // Generate unique filename
-            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
+            // Generate unique filename with .avif extension
+            var fileName = $"{Guid.NewGuid()}.avif";
             var filePath = Path.Combine(uploadsFolder, fileName);
             
-            // Save file
-            await using var fileStream = new FileStream(filePath, FileMode.Create);
-            await file.OpenReadStream(10 * 1024 * 1024).CopyToAsync(fileStream); // 10MB max
+            // Read file into memory stream
+            using var memoryStream = new MemoryStream();
+            await file.OpenReadStream(10 * 1024 * 1024).CopyToAsync(memoryStream);
+            memoryStream.Position = 0;
+            
+            // Convert to AVIF and compress
+            await Task.Run(() => 
+            {
+                using var image = new MagickImage(memoryStream);
+                image.Format = MagickFormat.Avif;
+                image.Quality = 75; // Compress for web
+                image.Write(filePath);
+            });
             
             // Set URL
             cv.ImageUrl = $"/images/products/{fileName}";
-            Snackbar.Add("Image uploaded successfully!", Severity.Success);
+            Snackbar.Add("Image uploaded and converted to AVIF successfully!", Severity.Success);
         }
         catch (Exception ex)
         {

@@ -2,7 +2,9 @@
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Roles = "Admin")]
 @using wowmenfashions.Services
+@using wowmenfashions.Data.Entities
 @inject IHomepageConfigService HomepageConfigService
+@inject IHomepageImageService HomepageImageService
 @inject ISnackbar Snackbar
 
 <PageTitle>Homepage Config | Admin</PageTitle>
@@ -18,37 +20,79 @@
 
     <MudPaper Class="pa-6">
         <MudText Typo="Typo.h6" Class="mb-4">Carousel Images</MudText>
-        
-        @foreach (var img in _carouselImages)
+
+        <MudFileUpload T="IReadOnlyList<IBrowserFile>" Accept=".jpg,.jpeg,.png,.webp,.avif" OnFilesChanged="OnFilesSelected" MaximumFileCount="10" AppendMultipleFiles="true">
+            <ActivatorContent>
+                <MudButton HtmlTag="label"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.CloudUpload">
+                    Upload Images
+                </MudButton>
+            </ActivatorContent>
+        </MudFileUpload>
+
+        @if (_uploadedFiles.Any() || _cachedImages.Any())
         {
-            <MudGrid Class="align-center mb-2">
-                <MudItem xs="10">
-                    <MudTextField @bind-Value="img.Url" Label="Image URL" Variant="Variant.Outlined" Margin="Margin.Dense" />
-                </MudItem>
-                <MudItem xs="2">
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => _carouselImages.Remove(img))" />
-                </MudItem>
-            </MudGrid>
+            <MudList T="string" Class="mt-4">
+                @foreach (var img in _cachedImages)
+                {
+                    <MudListItem>
+                        <MudGrid Class="align-center">
+                            <MudItem xs="2">
+                                <MudImage Src="@($"data:{img.ContentType};base64,{Convert.ToBase64String(img.ImageData)}")" ObjectFit="ObjectFit.Cover" Width="80" Height="40" />
+                            </MudItem>
+                            <MudItem xs="8">
+                                <MudText>Existing Image (Order: @img.DisplayOrder)</MudText>
+                            </MudItem>
+                            <MudItem xs="2">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => RemoveExistingImage(img))" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudListItem>
+                }
+                @foreach (var file in _uploadedFiles)
+                {
+                    <MudListItem>
+                        <MudGrid Class="align-center">
+                            <MudItem xs="10">
+                                <MudText>@file.Name (@Math.Round(file.Size / 1024.0, 1) KB) - Will be processed</MudText>
+                            </MudItem>
+                            <MudItem xs="2">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => _uploadedFiles.Remove(file))" />
+                            </MudItem>
+                        </MudGrid>
+                    </MudListItem>
+                }
+            </MudList>
         }
-        
-        <MudButton StartIcon="@Icons.Material.Filled.Add" Variant="Variant.Text" Color="Color.Primary" OnClick="AddCarouselImage" Class="mb-4">Add Image</MudButton>
-        
+
         <div class="d-flex justify-end mt-4">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveCarouselAsync">Save Carousel</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="SaveCarouselAsync" Disabled="_isSaving">
+                @if (_isSaving)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/>
+                    <MudText Class="ms-2">Saving...</MudText>
+                }
+                else
+                {
+                    <MudText>Save Carousel</MudText>
+                }
+            </MudButton>
         </div>
     </MudPaper>
 </MudContainer>
 
 @code {
     private string _announcement = string.Empty;
-    private List<CarouselImageInput> _carouselImages = new();
+    private List<HomepageImage> _cachedImages = new();
+    private List<IBrowserFile> _uploadedFiles = new();
+    private bool _isSaving = false;
 
     protected override async Task OnInitializedAsync()
     {
         _announcement = await HomepageConfigService.GetAnnouncementAsync();
-        
-        var images = await HomepageConfigService.GetCarouselImagesAsync();
-        _carouselImages = images.Select(img => new CarouselImageInput { Url = img }).ToList();
+        _cachedImages = await HomepageImageService.GetCachedImagesAsync();
     }
 
     private async Task SaveAnnouncementAsync()
@@ -64,31 +108,59 @@
         }
     }
 
-    private void AddCarouselImage()
+    private void OnFilesSelected(InputFileChangeEventArgs e)
     {
-        _carouselImages.Add(new CarouselImageInput());
+        _uploadedFiles.AddRange(e.GetMultipleFiles(10));
+    }
+
+    private void RemoveExistingImage(HomepageImage img)
+    {
+        _cachedImages.Remove(img);
     }
 
     private async Task SaveCarouselAsync()
     {
+        _isSaving = true;
+        StateHasChanged();
+
         try
         {
-            var validImages = _carouselImages
-                .Where(c => !string.IsNullOrWhiteSpace(c.Url))
-                .Select(c => c.Url)
-                .ToList();
+            var finalImages = new List<HomepageImage>();
+            
+            // Keep existing ones
+            foreach(var existing in _cachedImages)
+            {
+                existing.DisplayOrder = finalImages.Count + 1;
+                finalImages.Add(existing);
+            }
+
+            // Process newly uploaded ones
+            foreach(var file in _uploadedFiles)
+            {
+                using var stream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
+                var avifBytes = await HomepageImageService.ProcessImageAsync(stream);
                 
-            await HomepageConfigService.SetCarouselImagesAsync(validImages);
-            Snackbar.Add("Carousel images updated successfully!", Severity.Success);
+                finalImages.Add(new HomepageImage
+                {
+                    ImageData = avifBytes,
+                    ContentType = "image/avif",
+                    DisplayOrder = finalImages.Count + 1
+                });
+            }
+
+            await HomepageImageService.SaveImagesAsync(finalImages);
+            _uploadedFiles.Clear();
+            _cachedImages = await HomepageImageService.GetCachedImagesAsync();
+            Snackbar.Add("Carousel updated and compressed successfully!", Severity.Success);
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            Snackbar.Add($"Error processing images: {ex.Message}", Severity.Error);
         }
-    }
-
-    public class CarouselImageInput
-    {
-        public string Url { get; set; } = string.Empty;
+        finally
+        {
+            _isSaving = false;
+            StateHasChanged();
+        }
     }
 }

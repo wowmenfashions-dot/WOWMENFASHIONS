@@ -1,23 +1,42 @@
 @using wowmenfashions.Services
+@implements IDisposable
 @inject ICartService CartService
 
 <div class="mr-4 mt-1">
-    <MudBadge Content="_itemCount" Color="Color.Error" Overlap="true" Origin="Origin.TopRight" Visible="@(_itemCount > 0)" Class="mr-2 mt-2">
+    <MudBadge Content="_itemCount" Color="Color.Error" Overlap="true" Origin="Origin.TopRight" Visible="@(_itemCount > 0)" Class="mr-2 mt-2" BadgeClass="small-cart-badge">
         <MudIconButton Href="/cart" Icon="@Icons.Material.Filled.ShoppingCart" Color="Color.Inherit" />
     </MudBadge>
 </div>
+
+<style>
+    .small-cart-badge {
+        font-size: 0.65rem !important;
+        height: 18px !important;
+        min-width: 18px !important;
+        padding: 0 4px !important;
+    }
+</style>
 
 @code {
     private int _itemCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
+        CartService.OnCartChanged += HandleCartChanged;
         _itemCount = await CartService.GetCartItemCountAsync();
     }
 
-    public async Task RefreshCartCount()
+    private void HandleCartChanged()
     {
-        _itemCount = await CartService.GetCartItemCountAsync();
-        StateHasChanged();
+        InvokeAsync(async () =>
+        {
+            _itemCount = await CartService.GetCartItemCountAsync();
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        CartService.OnCartChanged -= HandleCartChanged;
     }
 }

@@ -15,11 +15,16 @@
         <!-- Color Swatches -->
         @if (Product.ColorImages != null && Product.ColorImages.Any())
         {
+            var distinctColors = Product.ColorImages
+                .GroupBy(kvp => kvp.Key.Split('|')[0].Trim())
+                .Select(g => new { Color = g.Key, ImageUrl = g.First().Value })
+                .ToList();
+                
             <div class="d-flex flex-wrap gap-2 mb-2">
-                @foreach (var kvp in Product.ColorImages)
+                @foreach (var colorData in distinctColors)
                 {
-                    <div class="border p-1 cursor-pointer @(CurrentColorName == kvp.Key ? "border-dark border-2" : "")" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;" @onmouseover="@(() => OnColorHover(kvp.Key, kvp.Value))" title="@kvp.Key">
-                        <div style="background-color: @GetCssColor(kvp.Key); width: 100%; height: 100%;"></div>
+                    <div class="border p-1 cursor-pointer @(CurrentColorName == colorData.Color ? "border-dark border-2" : "")" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;" @onmouseenter="@(() => OnColorHover(colorData.Color, colorData.ImageUrl))" @onclick="@(() => OnColorHover(colorData.Color, colorData.ImageUrl))" title="@colorData.Color">
+                        <div style="background-color: @GetCssColor(colorData.Color); width: 100%; height: 100%;"></div>
                     </div>
                 }
             </div>
@@ -93,7 +98,7 @@
             _lastProductId = Product.Id;
             if (Product.ColorImages != null && Product.ColorImages.Any())
             {
-                CurrentColorName = Product.ColorImages.Keys.First();
+                CurrentColorName = Product.ColorImages.Keys.First().Split('|')[0].Trim();
                 var images = Product.ColorImages.Values.First();
                 CurrentImageUrl = images?.Split(',', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim() ?? string.Empty;
             }
@@ -112,6 +117,8 @@
         CurrentImageUrl = !string.IsNullOrWhiteSpace(newImage) 
             ? (newImage.Split(',', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim() ?? "") 
             : (Product.ImageUrl?.Split(',', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim() ?? "");
+            
+        StateHasChanged();
     }
 
     private string GetCssColor(string colorName)

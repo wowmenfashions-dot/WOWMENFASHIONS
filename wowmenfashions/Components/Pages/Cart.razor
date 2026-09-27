@@ -187,9 +187,27 @@
 
         public string GetImageUrl()
         {
-            if (!string.IsNullOrEmpty(SelectedColor) && Product.ColorImages != null && Product.ColorImages.TryGetValue(SelectedColor, out var img))
+            if (Product.ColorImages != null && !string.IsNullOrEmpty(SelectedColor))
             {
-                return img;
+                // First try exact Color|Size match
+                string keyWithSize = string.IsNullOrEmpty(SelectedSize) ? SelectedColor : $"{SelectedColor}|{SelectedSize}";
+                if (Product.ColorImages.TryGetValue(keyWithSize, out var exactImg) && !string.IsNullOrWhiteSpace(exactImg))
+                {
+                    return exactImg.Split(',', StringSplitOptions.RemoveEmptyEntries).First().Trim();
+                }
+                
+                // Fallback to just Color
+                if (Product.ColorImages.TryGetValue(SelectedColor, out var colorImg) && !string.IsNullOrWhiteSpace(colorImg))
+                {
+                    return colorImg.Split(',', StringSplitOptions.RemoveEmptyEntries).First().Trim();
+                }
+                
+                // Fallback to prefix match (in case only Color|OtherSize exists)
+                var prefixMatch = Product.ColorImages.FirstOrDefault(kv => kv.Key.StartsWith(SelectedColor + "|"));
+                if (!string.IsNullOrWhiteSpace(prefixMatch.Value))
+                {
+                    return prefixMatch.Value.Split(',', StringSplitOptions.RemoveEmptyEntries).First().Trim();
+                }
             }
             return Product.ImageUrl;
         }

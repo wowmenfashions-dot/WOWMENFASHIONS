@@ -157,14 +157,43 @@ public class CustomerService : ICustomerService
         {
             await connection.ExecuteAsync(
                 "dbo.Address_Create",
-                address,
+                new 
+                {
+                    address.CustomerId,
+                    address.FullName,
+                    address.AddressLine,
+                    address.AddressLine2,
+                    address.City,
+                    address.State,
+                    address.PostalCode,
+                    address.Country,
+                    address.ContactNumber,
+                    address.Landmark,
+                    address.IsDefaultShipping,
+                    address.IsDefaultBilling
+                },
                 commandType: CommandType.StoredProcedure);
         }
         else
         {
             await connection.ExecuteAsync(
                 "dbo.Address_Update",
-                address,
+                new 
+                {
+                    address.Id,
+                    address.CustomerId,
+                    address.FullName,
+                    address.AddressLine,
+                    address.AddressLine2,
+                    address.City,
+                    address.State,
+                    address.PostalCode,
+                    address.Country,
+                    address.ContactNumber,
+                    address.Landmark,
+                    address.IsDefaultShipping,
+                    address.IsDefaultBilling
+                },
                 commandType: CommandType.StoredProcedure);
         }
         return true;

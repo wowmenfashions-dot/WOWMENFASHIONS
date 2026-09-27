@@ -108,12 +108,12 @@
                             </div>
                         }
 
-                        @if (_product.AvailableSizesList != null && _product.AvailableSizesList.Any())
+                        @if (GetAvailableSizesForCurrentColor().Any())
                         {
                             <div class="mb-2">
                                 <MudText Typo="Typo.body2" Class="mb-2">Men's Size: <strong>@(_selectedSize ?? "Select Size")</strong></MudText>
                                 <div class="d-flex flex-wrap gap-2">
-                                    @foreach (var size in _product.AvailableSizesList)
+                                    @foreach (var size in GetAvailableSizesForCurrentColor())
                                     {
                                         <div class="size-box @(_selectedSize == size ? "selected" : "")" 
                                              style="border: @(_selectedSize == size ? "2px solid #0060a9" : "1px solid #ccc"); padding: 8px 12px; cursor: pointer; border-radius: 2px; min-width: 48px; text-align: center;"
@@ -328,9 +328,11 @@
                 SelectColor(_product.Color);
             }
             
-            if (_product.AvailableSizesList != null && _product.AvailableSizesList.Any())
+            
+            var availableSizes = GetAvailableSizesForCurrentColor();
+            if (availableSizes.Any())
             {
-                _selectedSize = _product.AvailableSizesList.First();
+                _selectedSize = availableSizes.First();
             }
 
             _breadcrumbs = new List<BreadcrumbItem>
@@ -347,15 +349,74 @@
     private void SelectSize(string size)
     {
         _selectedSize = size;
+        UpdateImagesForSelection();
     }
 
     private void SelectColor(string color)
     {
         _selectedColor = color;
+        var availableSizes = GetAvailableSizesForCurrentColor();
+        if (!availableSizes.Contains(_selectedSize as string) && availableSizes.Any())
+        {
+            _selectedSize = availableSizes.First();
+        }
+        UpdateImagesForSelection();
+    }
+
+    private List<string> GetAvailableSizesForCurrentColor()
+    {
+        if (_product == null) return new List<string>();
+        
+        var colorStr = _selectedColor as string ?? string.Empty;
+        var sizesForColor = _product.ColorImages?.Keys
+            .Where(k => k.StartsWith(colorStr + "|"))
+            .Select(k => k.Split('|')[1])
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .Distinct()
+            .ToList();
+            
+        if (sizesForColor != null && sizesForColor.Any())
+        {
+            return sizesForColor;
+        }
+        
+        return _product.AvailableSizesList ?? new List<string>();
+    }
+
+    private void UpdateImagesForSelection()
+    {
         if (_product != null)
         {
             _displayedImages.Clear();
-            if (!string.IsNullOrEmpty(color) && _product.ColorImages != null && _product.ColorImages.TryGetValue(color, out var imgStr) && !string.IsNullOrWhiteSpace(imgStr))
+            var colorStr = _selectedColor as string ?? string.Empty;
+            var sizeStr = _selectedSize as string ?? string.Empty;
+            
+            string imgStr = null;
+            if (_product.ColorImages != null)
+            {
+                // Try exact match Color|Size
+                string exactKey = string.IsNullOrEmpty(sizeStr) ? colorStr : $"{colorStr}|{sizeStr}";
+                if (_product.ColorImages.TryGetValue(exactKey, out var exactImg) && !string.IsNullOrWhiteSpace(exactImg))
+                {
+                    imgStr = exactImg;
+                }
+                // Try just Color
+                else if (_product.ColorImages.TryGetValue(colorStr, out var colorImg) && !string.IsNullOrWhiteSpace(colorImg))
+                {
+                    imgStr = colorImg;
+                }
+                // Try any variant for this color
+                else
+                {
+                    var prefixMatch = _product.ColorImages.FirstOrDefault(kv => kv.Key.StartsWith(colorStr + "|"));
+                    if (!string.IsNullOrWhiteSpace(prefixMatch.Value))
+                    {
+                        imgStr = prefixMatch.Value;
+                    }
+                }
+            }
+            
+            if (!string.IsNullOrWhiteSpace(imgStr))
             {
                 var urls = imgStr.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
                 _currentImageUrl = urls.FirstOrDefault() ?? string.Empty;

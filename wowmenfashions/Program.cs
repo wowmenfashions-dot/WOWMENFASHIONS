@@ -37,6 +37,7 @@ builder.Services.AddScoped<GuestSessionService>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<IHomepageConfigRepository, HomepageConfigRepository>();
 builder.Services.AddScoped<IHomepageConfigService, HomepageConfigService>();
+builder.Services.AddScoped<IHomepageImageService, HomepageImageService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IStoreSettingsRepository, StoreSettingsRepository>();
 builder.Services.AddScoped<IStoreSettingsService, StoreSettingsService>();

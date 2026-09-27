@@ -9,3 +9,7 @@ Instead of executing plans manually in standard planning mode, follow these stri
 4. **Implement:** Use the `speckit-implement` skill to execute the tasks systematically.
 
 Do not bypass this workflow for project code modifications.
+
+## Open Knowledge Format (OKF) Enforcement
+**CRITICAL RULE:** All agents (Antigravity and any prompt agents) MUST always refer to the Open Knowledge Format (OKF) files located in the `knowledge/` directory (specifically `knowledge/okf.md`) BEFORE planning, making changes, or answering questions about the architecture or project context. 
+- Ensure any new project decisions or patterns are updated in the OKF files.

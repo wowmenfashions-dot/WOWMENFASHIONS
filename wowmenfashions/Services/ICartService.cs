@@ -11,4 +11,5 @@ public interface ICartService
     Task UpdateItemQuantityAsync(int cartItemId, int quantity);
     Task RemoveItemAsync(int cartItemId);
     Task<int> GetCartItemCountAsync();
+    event Action? OnCartChanged;
 }

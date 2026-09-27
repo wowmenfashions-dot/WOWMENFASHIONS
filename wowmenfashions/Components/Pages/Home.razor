@@ -1,7 +1,9 @@
 @page "/"
 @using wowmenfashions.Services
+@using wowmenfashions.Data.Entities
 @inject NavigationManager NavigationManager
 @inject IHomepageConfigService HomepageConfigService
+@inject IHomepageImageService HomepageImageService
 
 <PageTitle>WOWMENFASHIONS - Premium Leather Bags & Wallets</PageTitle>
 
@@ -31,7 +33,7 @@
     {
         <MudCarousel Class="mud-width-full carousel-section" Style="height: 400px;" ItemsSource="@Images" AutoCycle="true">
             <ItemTemplate>
-                <MudImage Src="@context" Style="width: 100%; height: 100%; object-fit: cover;" />
+                <MudImage Src="@($"data:{context.ContentType};base64,{Convert.ToBase64String(context.ImageData)}")" ObjectFit="ObjectFit.Cover" Fluid="true" Style="width: 100%; height: 100%;" />
             </ItemTemplate>
         </MudCarousel>
     }
@@ -67,8 +69,45 @@
         </MudGrid>
     </MudContainer>
 
+    <!-- SHOP BY CATEGORY SECTION -->
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mb-12 mt-8 px-4">
+        <MudText Typo="Typo.h5" Class="fw-bold mb-6 text-muted">Shop by Category</MudText>
+        
+        <MudGrid Spacing="4" Justify="Justify.Center">
+            <!-- Women's Category -->
+            <MudItem xs="12" sm="4" Class="text-center">
+                <a href="/category/womens" class="text-decoration-none">
+                    <div class="category-card rounded overflow-hidden mb-2 border" style="background-color: #fff; transition: transform 0.3s ease;">
+                        <MudImage Src="/images/categories/womens.png" Alt="Women's" Fluid="true" ObjectFit="ObjectFit.Cover" Style="width: 100%; aspect-ratio: 4/3;" />
+                    </div>
+                    <MudText Typo="Typo.subtitle1" Class="fw-bold text-dark mt-2">Women's</MudText>
+                </a>
+            </MudItem>
+
+            <!-- Men's Category -->
+            <MudItem xs="12" sm="4" Class="text-center">
+                <a href="/category/mens" class="text-decoration-none">
+                    <div class="category-card rounded overflow-hidden mb-2 border" style="background-color: #fff; transition: transform 0.3s ease;">
+                        <MudImage Src="/images/categories/mens.png" Alt="Men's" Fluid="true" ObjectFit="ObjectFit.Cover" Style="width: 100%; aspect-ratio: 4/3;" />
+                    </div>
+                    <MudText Typo="Typo.subtitle1" Class="fw-bold text-dark mt-2">Men's</MudText>
+                </a>
+            </MudItem>
+
+            <!-- Kids' Category -->
+            <MudItem xs="12" sm="4" Class="text-center">
+                <a href="/category/kids" class="text-decoration-none">
+                    <div class="category-card rounded overflow-hidden mb-2 border" style="background-color: #fff; transition: transform 0.3s ease;">
+                        <MudImage Src="/images/categories/kids.png" Alt="Kids'" Fluid="true" ObjectFit="ObjectFit.Cover" Style="width: 100%; aspect-ratio: 4/3;" />
+                    </div>
+                    <MudText Typo="Typo.subtitle1" Class="fw-bold text-dark mt-2">Kids'</MudText>
+                </a>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
+
     <!-- QUALITY OF PRODUCT SECTION -->
-    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mb-16 mt-8 px-4">
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mb-16 mt-12 px-4">
         <MudText Typo="Typo.h5" Align="Align.Center" Class="fw-bold mb-10 text-uppercase" Style="letter-spacing: 2px;">Quality of Product</MudText>
         
         <MudGrid Spacing="6" Justify="Justify.Center">
@@ -112,13 +151,13 @@
 </div>
 
 @code {
-    private List<string> Images = new();
+    private List<HomepageImage> Images = new();
     private string AnnouncementText = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
         AnnouncementText = await HomepageConfigService.GetAnnouncementAsync();
-        Images = await HomepageConfigService.GetCarouselImagesAsync();
+        Images = await HomepageImageService.GetCachedImagesAsync();
     }
 }
 
@@ -172,5 +211,11 @@
     }
     .gallery-image:hover {
         transform: scale(1.02);
+    }
+    .category-card img {
+        transition: transform 0.3s ease;
+    }
+    .category-card:hover img {
+        transform: scale(1.05);
     }
 </style>

@@ -6,68 +6,57 @@
 
 <PageTitle>@_pageTitle - WOWMENFASHIONS</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="pt-1 pb-4">
+<MudContainer MaxWidth="MaxWidth.Large" Class="pt-0 pb-4">
     <!-- Breadcrumb Area -->
-    <MudBreadcrumbs Items="_breadcrumbs" Class="px-0 mb-2" />
+    <MudBreadcrumbs Items="_breadcrumbs" Class="px-0 mb-0" />
+    <!-- Filters Row -->
+    <MudPaper Elevation="0" Class="pa-2 mb-2 border rounded-lg" Style="background-color: transparent !important;">
+        <MudGrid Spacing="1" Justify="Justify.FlexStart" Class="align-end">
+            
+            <!-- Primary Categories -->
+            <MudItem xs="12" sm="4" md="2">
+                <MudSelect T="string" Label="Category" Value="@Slug" ValueChanged="NavigateToCategory" Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
+                    @foreach (var cat in _primaryCategories)
+                    {
+                        <MudSelectItem Value="@cat.Slug">@cat.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
 
-    @if (Slug.Equals("mens", StringComparison.OrdinalIgnoreCase))
-    {
-        <!-- Promotional Banner -->
-        <MudPaper Elevation="0" Class="mb-4 overflow-hidden rounded-lg">
-            <img src="images/banners/mens-promotional-banner.avif" alt="Men's Collection" style="width: 100%; max-height: 400px; object-fit: cover;" onerror="this.onerror=null; this.src='https://picsum.photos/seed/mensbanner/1200/400.avif';" />
-        </MudPaper>
-    }
-
-    <!-- Filters Row (Collapsible) -->
-    <MudExpansionPanels Class="mb-4" Elevation="0">
-        <MudExpansionPanel Text="Filter Products" Class="border rounded-lg" Style="background-color: transparent !important;">
-            <MudGrid Spacing="2" Justify="Justify.FlexStart" Class="align-end">
-                
-                <!-- Primary Categories -->
-                <MudItem xs="12" sm="6" md="3">
-                    <MudSelect T="string" Label="Category" Value="@Slug" ValueChanged="NavigateToCategory" Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
-                        @foreach (var cat in _primaryCategories)
+            <!-- Subcategories (Cascading) -->
+            @if (_subCategories.Any())
+            {
+                <MudItem xs="12" sm="4" md="2">
+                    <MudSelect T="string" Label="Subcategory" Value="@_selectedSubcategorySlug" ValueChanged="SetSubcategoryFilter" Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
+                        <MudSelectItem T="string" Value="@(string.Empty)">All @(_currentCategory?.Name)</MudSelectItem>
+                        @foreach (var sub in _subCategories)
                         {
-                            <MudSelectItem Value="@cat.Slug">@cat.Name</MudSelectItem>
+                            <MudSelectItem T="string" Value="@sub.Slug">@sub.Name</MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
+            }
 
-                <!-- Subcategories (Cascading) -->
-                @if (_subCategories.Any())
-                {
-                    <MudItem xs="12" sm="6" md="3">
-                        <MudSelect T="string" Label="Subcategory" Value="@_selectedSubcategorySlug" ValueChanged="SetSubcategoryFilter" Variant="Variant.Outlined" Dense="true" Margin="Margin.Dense">
-                            <MudSelectItem T="string" Value="@(string.Empty)">All @(_currentCategory?.Name)</MudSelectItem>
-                            @foreach (var sub in _subCategories)
-                            {
-                                <MudSelectItem T="string" Value="@sub.Slug">@sub.Name</MudSelectItem>
-                            }
-                        </MudSelect>
-                    </MudItem>
-                }
-
-                <!-- Price Range -->
-                <MudItem xs="12" sm="6" md="3">
-                    <div class="d-flex align-center mt-1">
-                        <MudText Typo="Typo.caption" Class="me-2 text-nowrap">Up to ₹@_maxPrice</MudText>
-                        <div class="px-4 flex-grow-1">
-                            <MudSlider @bind-Value="_maxPrice" Min="0" Max="3000" Step="50" ValueLabel="true" Color="Color.Primary" Size="Size.Small" />
-                        </div>
-                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Class="ms-2 rounded-pill" OnClick="ApplyFilters">Apply</MudButton>
+            <!-- Price Range -->
+            <MudItem xs="12" sm="6" md="4">
+                <div class="d-flex align-center mt-1">
+                    <MudText Typo="Typo.caption" Class="me-2 text-nowrap">Up to ₹@_maxPrice</MudText>
+                    <div class="px-2 flex-grow-1">
+                        <MudSlider @bind-Value="_maxPrice" Min="0" Max="3000" Step="50" ValueLabel="true" Color="Color.Primary" Size="Size.Small" />
                     </div>
-                </MudItem>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Class="ms-2 rounded-pill" OnClick="ApplyFilters">Apply</MudButton>
+                </div>
+            </MudItem>
 
-            </MudGrid>
-        </MudExpansionPanel>
-    </MudExpansionPanels>
+        </MudGrid>
+    </MudPaper>
 
     <!-- Product Grid Header -->
-    <div class="d-flex flex-wrap align-center justify-space-between mb-4 gap-2">
+    <div class="d-flex flex-wrap align-center justify-space-between mb-2 gap-2">
         <MudText Typo="Typo.caption" Class="text-muted">Showing @(_products.Count()) of @_totalItems results</MudText>
         <MudSpacer />
         <div style="width: 200px;">
-            <MudSelect T="string" @bind-Value="_sortBy" Variant="Variant.Outlined" Margin="Margin.Dense" Class="sorting-select">
+            <MudSelect T="string" Value="@_sortBy" ValueChanged="SortChanged" Variant="Variant.Outlined" Margin="Margin.Dense" Class="sorting-select">
                 <MudSelectItem Value="@("default")">Default sorting</MudSelectItem>
                 <MudSelectItem Value="@("popularity")">Sort by popularity</MudSelectItem>
                 <MudSelectItem Value="@("latest")">Sort by latest</MudSelectItem>
@@ -113,6 +102,19 @@
     private IEnumerable<ProductDto> _products = new List<ProductDto>();
     private List<BreadcrumbItem> _breadcrumbs = new();
     
+    // URL Parameters
+    [SupplyParameterFromQuery(Name = "maxPrice")]
+    public int? QueryMaxPrice { get; set; }
+
+    [SupplyParameterFromQuery(Name = "sort")]
+    public string? QuerySortBy { get; set; }
+
+    [SupplyParameterFromQuery(Name = "sub")]
+    public string? QuerySubcategory { get; set; }
+
+    [SupplyParameterFromQuery(Name = "page")]
+    public int? QueryPage { get; set; }
+
     // Filter State
     private int _maxPrice = 3000;
     private string? _selectedColor = null;
@@ -145,12 +147,14 @@
         if (_previousSlug != Slug)
         {
             _previousSlug = Slug;
-            _maxPrice = 3000;
             _selectedColor = null;
-            _selectedSubcategorySlug = null;
-            _sortBy = "default";
-            _page = 1;
         }
+
+        // Sync state from query parameters
+        _maxPrice = QueryMaxPrice ?? 3000;
+        _sortBy = QuerySortBy ?? "default";
+        _selectedSubcategorySlug = QuerySubcategory;
+        _page = QueryPage ?? 1;
 
         _breadcrumbs = new List<BreadcrumbItem>
         {
@@ -182,23 +186,41 @@
         _isLoading = false;
     }
 
-    private async Task PageChanged(int page)
+    private void UpdateUrl()
+    {
+        var uri = Navigation.GetUriWithQueryParameters(new Dictionary<string, object?>
+        {
+            { "maxPrice", _maxPrice == 3000 ? null : (int?)_maxPrice },
+            { "sort", _sortBy == "default" ? null : _sortBy },
+            { "sub", string.IsNullOrEmpty(_selectedSubcategorySlug) ? null : _selectedSubcategorySlug },
+            { "page", _page <= 1 ? null : (int?)_page }
+        });
+        Navigation.NavigateTo(uri);
+    }
+
+    private void PageChanged(int page)
     {
         _page = page;
-        await LoadProductsAsync();
+        UpdateUrl();
     }
 
-    private async Task ApplyFilters()
+    private void ApplyFilters()
     {
         _page = 1;
-        await LoadProductsAsync();
+        UpdateUrl();
     }
 
-    private async Task SetSubcategoryFilter(string? subcategorySlug)
+    private void SetSubcategoryFilter(string? subcategorySlug)
     {
         _selectedSubcategorySlug = subcategorySlug;
         _page = 1;
-        await LoadProductsAsync();
+        UpdateUrl();
+    }
+
+    private void SortChanged(string sort)
+    {
+        _sortBy = sort;
+        UpdateUrl();
     }
 
     private void NavigateToCategory(string categorySlug)

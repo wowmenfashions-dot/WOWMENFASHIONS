@@ -84,8 +84,8 @@ public class ProductService : IProductService
                     }
                     if (p.ColorImages.Any())
                     {
-                        var keys = p.ColorImages.Keys.ToList();
-                        p.AvailableColors = string.Join(",", keys);
+                        var colors = p.ColorImages.Keys.Select(k => k.Split('|')[0].Trim()).Distinct().ToList();
+                        p.AvailableColors = string.Join(",", colors);
                     }
                 }
             }

@@ -17,6 +17,8 @@ public class CartService : ICartService
         _guestSessionService = guestSessionService;
     }
 
+    public event Action? OnCartChanged;
+
     public async Task<Cart?> GetCartAsync()
     {
         var guestCartId = _guestSessionService.GetOrCreateGuestCartId();
@@ -30,16 +32,19 @@ public class CartService : ICartService
         int? customerId = null; // To be implemented in User Story 4
 
         await _cartRepository.AddItemAsync(guestCartId, customerId, productId, quantity, selectedColor, selectedSize);
+        OnCartChanged?.Invoke();
     }
 
     public async Task UpdateItemQuantityAsync(int cartItemId, int quantity)
     {
         await _cartRepository.UpdateItemQuantityAsync(cartItemId, quantity);
+        OnCartChanged?.Invoke();
     }
 
     public async Task RemoveItemAsync(int cartItemId)
     {
         await _cartRepository.RemoveItemAsync(cartItemId);
+        OnCartChanged?.Invoke();
     }
 
     public async Task<int> GetCartItemCountAsync()

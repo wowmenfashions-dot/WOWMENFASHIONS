@@ -79,3 +79,8 @@ body {
     border-color: #E5E7EB !important;
     color: #1E1E1E !important;
 }
+
+/* Global elegant border color instead of harsh black */
+.border, .border-top, .border-bottom, .border-left, .border-right {
+    border-color: #E5E7EB !important;
+}
