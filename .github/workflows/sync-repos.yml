@@ -13,10 +13,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Push to Destination Repository
         env:
-          DESTINATION_REPO: https://${{ secrets.SYNC_WOWMEN_RELEASE }}@github.com/wowmenfashions-dot/WOWMENFASHIONS.git
+          DESTINATION_REPO: https://baskarkannappan:${{ secrets.SYNC_WOWMEN_RELEASE }}@github.com/wowmenfashions-dot/WOWMENFASHIONS.git
         run: |
           git remote add destination $DESTINATION_REPO
           # We push the local develop branch to the remote release branch
