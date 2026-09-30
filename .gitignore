@@ -6,3 +6,4 @@ packages/
 .vscode/
 .vs/
 .idea/
+appsettings.Development.json

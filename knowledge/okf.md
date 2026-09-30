@@ -4,7 +4,9 @@ This directory contains the Open Knowledge Format (OKF) files for the WOWMENFASH
 All agents and developers MUST consult these files before making architectural changes, modifying existing workflows, or introducing new patterns.
 
 ## Project Guidelines
-- **Architecture**: (To be defined)
+- **Architecture**: 
+  - **Background Jobs**: Use `Hangfire` for non-blocking asynchronous tasks (e.g., email dispatch, cart abandonment).
+  - **Email Notifications**: Use Azure Communication Services (ACS). All email dispatch must be non-blocking (via Hangfire) and any exceptions should be caught and logged to `EmailNotificationLogs` (never re-thrown to the UI).
 - **Database**: SQL Server schemas and stored procedures.
 - **Frontend**: Blazor Web App (wowmenfashions).
 

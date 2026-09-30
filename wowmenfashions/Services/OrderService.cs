@@ -1,6 +1,7 @@
 using System.Data;
 using System.Threading.Tasks;
 using Dapper;
+using Hangfire;
 using wowmenfashions.Data;
 
 namespace wowmenfashions.Services
@@ -23,6 +24,8 @@ namespace wowmenfashions.Services
                 "dbo.Order_UpdateStatus",
                 new { OrderId = orderId, Status = status },
                 commandType: CommandType.StoredProcedure);
+            // Dispatch status update email as non-blocking Hangfire background job
+            BackgroundJob.Enqueue<IEmailNotificationService>(s => s.SendOrderStatusUpdateAsync(orderId, status));
         }
 
         public async Task UpdateOrderTrackingAsync(int orderId, string courierName, string trackingNumber, string trackingUrl)

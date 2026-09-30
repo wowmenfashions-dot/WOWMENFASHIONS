@@ -1,6 +1,7 @@
 using System.Data;
 using System.Threading.Tasks;
 using Dapper;
+using Hangfire;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using wowmenfashions.Models;
@@ -89,6 +90,8 @@ namespace wowmenfashions.Services
 
                 transaction.Commit();
                 _logger.LogInformation("Pending order {OrderId} created successfully", newOrderId);
+                // Dispatch confirmation email as non-blocking Hangfire background job
+                BackgroundJob.Enqueue<IEmailNotificationService>(s => s.SendOrderConfirmationAsync(newOrderId));
                 return newOrderId;
             }
             catch (Exception ex)

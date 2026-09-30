@@ -3,8 +3,10 @@
 @using MudBlazor
 @using wowmenfashions.Models
 @using wowmenfashions.Services
+@using wowmenfashions.Data
 @inject IOrderService OrderService
 @inject ISnackbar Snackbar
+@inject IEmailNotificationLogRepository EmailLogRepository
 
 <PageTitle>Admin - Order Management</PageTitle>
 
@@ -59,6 +61,30 @@
             <PropertyColumn Property="x => x.TrackingNumber" Title="Tracking No." />
             <PropertyColumn Property="x => x.TrackingUrl" Title="Tracking URL" />
             
+            <TemplateColumn Title="Email Status" Editable="false">
+                <CellTemplate>
+                    @if (_orderEmailLogs.TryGetValue(context.Item.Id, out var log))
+                    {
+                        @if (log.Status == "Sent")
+                        {
+                            <MudChip T="string" Color="Color.Success" Size="Size.Small">✉ Email Sent (@log.SentAt.ToString("g"))</MudChip>
+                        }
+                        else if (log.Status == "Failed")
+                        {
+                            <MudChip T="string" Color="Color.Error" Size="Size.Small">✉ Email Failed</MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" Color="Color.Default" Size="Size.Small">✉ @log.Status</MudChip>
+                        }
+                    }
+                    else
+                    {
+                        <MudChip T="string" Color="Color.Default" Size="Size.Small">✉ No Email</MudChip>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            
             <TemplateColumn Title="Actions">
                 <CellTemplate>
                     <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Edit" OnClick="@context.Actions.StartEditingItemAsync" />
@@ -99,6 +125,7 @@
 @code {
     private IEnumerable<OrderDto> _orders = new List<OrderDto>();
     private string _activeTab = "All";
+    private Dictionary<int, EmailNotificationLogDto> _orderEmailLogs = new();
 
     private IEnumerable<OrderDto> FilteredOrders => _activeTab == "All" 
         ? _orders 
@@ -126,6 +153,16 @@
     private async Task LoadOrders()
     {
         _orders = await OrderService.GetAllOrdersAsync();
+        _orderEmailLogs.Clear();
+        foreach (var order in _orders)
+        {
+            var logs = await EmailLogRepository.GetByOrderIdAsync(order.Id);
+            var latestLog = logs.FirstOrDefault();
+            if (latestLog != null)
+            {
+                _orderEmailLogs[order.Id] = latestLog;
+            }
+        }
     }
 
     private async Task CommittedItemChanges(OrderDto item)
