@@ -1,3 +1,9 @@
+USE wowmenfashions;
+GO
+
+-- ============================================================
+-- Fix: Update Cart_Get to return SelectedSize
+-- ============================================================
 CREATE OR ALTER PROCEDURE [dbo].[Cart_Get]
     @GuestCartId UNIQUEIDENTIFIER = NULL,
     @CustomerId INT = NULL
@@ -6,8 +12,7 @@ BEGIN
     SET NOCOUNT ON;
 
     DECLARE @CartId UNIQUEIDENTIFIER;
-    
-    -- Find existing cart
+
     IF @CustomerId IS NOT NULL
         SELECT @CartId = Id FROM Carts WHERE CustomerId = @CustomerId;
     ELSE IF @GuestCartId IS NOT NULL
@@ -27,5 +32,28 @@ BEGIN
         LEFT JOIN ProductColorImages pci ON pci.ProductId = p.Id AND pci.ColorName = ci.SelectedColor
         WHERE ci.CartId = @CartId;
     END
+END
+GO
+
+-- ============================================================
+-- Fix: Update OrderItem_GetByOrderId to return SelectedSize
+-- ============================================================
+CREATE OR ALTER PROCEDURE [dbo].[OrderItem_GetByOrderId]
+    @OrderId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        Id, 
+        OrderId, 
+        ProductId, 
+        ProductName, 
+        Price, 
+        Quantity, 
+        SelectedColor,
+        SelectedSize
+    FROM OrderItems 
+    WHERE OrderId = @OrderId;
 END
 GO
