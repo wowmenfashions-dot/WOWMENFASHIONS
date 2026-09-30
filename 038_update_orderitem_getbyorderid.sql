@@ -1,4 +1,7 @@
-CREATE PROCEDURE [dbo].[OrderItem_GetByOrderId]
+USE wowmenfashions;
+GO
+
+CREATE OR ALTER PROCEDURE [dbo].[OrderItem_GetByOrderId]
     @OrderId INT
 AS
 BEGIN
