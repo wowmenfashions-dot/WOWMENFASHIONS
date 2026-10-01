@@ -58,13 +58,13 @@ public class EmailNotificationService : IEmailNotificationService
             var subject = $"Your WOWMENFASHIONS Order #{order.Id} is Confirmed! 🎉";
             var htmlBody = BuildOrderConfirmationHtml(order);
 
-            await SendEmailAsync(order.CustomerEmail, subject, htmlBody);
+            var sent = await SendEmailAsync(order.CustomerEmail, subject, htmlBody);
 
             await _logRepository.LogAsync(
                 orderId: order.Id,
                 notificationType: "OrderConfirmation",
                 recipientEmail: order.CustomerEmail,
-                status: "Sent");
+                status: sent ? "Sent" : "Skipped");
 
             _logger.LogInformation("Order confirmation email sent for Order {OrderId} to {Email}", order.Id, order.CustomerEmail);
         }
@@ -119,13 +119,13 @@ public class EmailNotificationService : IEmailNotificationService
 
             var htmlBody = BuildOrderStatusUpdateHtml(order, newStatus);
 
-            await SendEmailAsync(order.CustomerEmail, subject, htmlBody);
+            var sent = await SendEmailAsync(order.CustomerEmail, subject, htmlBody);
 
             await _logRepository.LogAsync(
                 orderId: order.Id,
                 notificationType: "StatusUpdate",
                 recipientEmail: order.CustomerEmail,
-                status: "Sent",
+                status: sent ? "Sent" : "Skipped",
                 orderStatus: newStatus);
 
             _logger.LogInformation("Status update email sent for Order {OrderId} (status: {Status}) to {Email}", order.Id, newStatus, order.CustomerEmail);
@@ -153,7 +153,7 @@ public class EmailNotificationService : IEmailNotificationService
     // ────────────────────────────────────────────────────────
     // Private: Send via ACS
     // ────────────────────────────────────────────────────────
-    private async Task SendEmailAsync(string toAddress, string subject, string htmlBody)
+    private async Task<bool> SendEmailAsync(string toAddress, string subject, string htmlBody)
     {
         var connectionString = _configuration["AzureCommunicationServices:ConnectionString"];
         var senderAddress    = _configuration["AzureCommunicationServices:SenderAddress"];
@@ -161,7 +161,7 @@ public class EmailNotificationService : IEmailNotificationService
         if (string.IsNullOrWhiteSpace(connectionString) || string.IsNullOrWhiteSpace(senderAddress))
         {
             _logger.LogWarning("Azure Communication Services not configured. Email to {To} skipped.", toAddress);
-            return;
+            return false;
         }
 
         var emailClient = new EmailClient(connectionString);
@@ -178,6 +178,7 @@ public class EmailNotificationService : IEmailNotificationService
         emailMessage.Recipients.CC.Add(new EmailAddress("wowmenfashions@gmail.com"));
 
         await emailClient.SendAsync(WaitUntil.Started, emailMessage);
+        return true;
     }
 
     // ────────────────────────────────────────────────────────
